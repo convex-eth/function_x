@@ -1,0 +1,25 @@
+{
+    "system": {
+        "deployer": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277",
+        "multisig": "0xa3C5A1e09150B75ff251c1a7815A07182c3de2FB",
+        "treasury": "0x1389388d01708118b497f59521f6943Be2541bb7",
+        "cvxDistro": "0x449f2fd99174e1785CF2A1c79E665Fec3dD1DdC6",
+        "cvx": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+        "voteProxy": "",
+        "booster": "",
+        "cvxFxn": "",
+        "burner": "",
+        "fxnDepositor": "",
+        "cvxFxnStaking": "",
+        "cvxFxnStakingFeeReceiver": "",
+        "vefxnRewardQueue": ""
+    },
+    "fxn": {
+        "fxn": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+        "vefxn": "0xEC6B8A3F3605B083F7044C0F31f2cac0caf1d469",
+        "vefxnRewardDistro": "0x851AAEA3A2757D457E1Ce88C3808C1690213e432",
+        "feeToken": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+        "walletChecker": "0xD71B8B76015F296E53D41e8288a8a13eAfFff2ea"
+    },
+    "pools": []
+}
