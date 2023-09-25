@@ -142,7 +142,8 @@ contract("cvxFXN Deploy", async accounts => {
     
 
     //deploy
-    let voteproxy = await FxnVoterProxy.new({from:deployer});
+    // let voteproxy = await FxnVoterProxy.new({from:deployer});
+    let voteproxy = await FxnVoterProxy.at(contractList.system.voteProxy);
     let cvxfxn = await cvxFxnToken.new(voteproxy.address,{from:deployer});
     let fxndeposit = await FxnDepositor.new(voteproxy.address, cvxfxn.address, {from:deployer});
     let booster = await Booster.new(voteproxy.address, fxndeposit.address, cvxfxn.address, {from:deployer});

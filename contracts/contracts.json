@@ -1,11 +1,11 @@
 {
     "system": {
-        "deployer": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277",
+        "deployer": "0xe7Ac460137CCD6173DB6992529013D672d4F0087",
         "multisig": "0xa3C5A1e09150B75ff251c1a7815A07182c3de2FB",
         "treasury": "0x1389388d01708118b497f59521f6943Be2541bb7",
         "cvxDistro": "0x449f2fd99174e1785CF2A1c79E665Fec3dD1DdC6",
         "cvx": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
-        "voteProxy": "",
+        "voteProxy": "0xd11a4Ee017cA0BECA8FA45fF2abFe9C6267b7881",
         "booster": "",
         "cvxFxn": "",
         "burner": "",
