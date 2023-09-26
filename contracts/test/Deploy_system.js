@@ -138,7 +138,8 @@ contract("cvxFXN Deploy", async accounts => {
     //   console.log("\n  >>>>  advance time " +(secondsElaspse/86400) +" days  >>>>\n");
     // }
     // const day = 86400;
-    await unlockAccount(deployer);
+    // await unlockAccount(deployer);
+    console.log("deploying from " +deployer);
     
 
     //deploy
