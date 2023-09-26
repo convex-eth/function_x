@@ -213,13 +213,14 @@ contract("FXN locking", async accounts => {
     console.log("is whitelist? " +isWhitelist);
 
 
-    console.log("set snapshot delegation...");
-    //set delegation
-    let delegation = await IDelegation.at("0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446");
-    var spaceHex = "0x"+Buffer.from('fxn.eth', 'utf8').toString('hex');
-    console.log("space(hex): " +spaceHex);
-    await booster.setDelegate(delegation.address, deployer, spaceHex, {from:deployer});
-    await delegation.delegation(voteproxy.address,spaceHex).then(a=>console.log("delegated to: " +a));
+    // console.log("set snapshot delegation...");
+    // //set delegation
+    // let delegation = await IDelegation.at("0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446");
+    // var spaceHex = "0x"+Buffer.from('fxn.eth', 'utf8').toString('hex');
+    // console.log("space(hex): " +spaceHex);
+    // var convexdelegate = "0x724061efDFef4a421e8be05133ad24922D07b5Bf";
+    // await booster.setDelegate(delegation.address, convexdelegate, spaceHex, {from:deployer});
+    // await delegation.delegation(voteproxy.address,spaceHex).then(a=>console.log("delegated to: " +a));
 
     let starttime = await time.latest();
     console.log("current block time: " +starttime)
@@ -299,11 +300,11 @@ contract("FXN locking", async accounts => {
 
     //claim fees
     console.log("distribute fees...");
-    var stethholder = "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0";
+    var wstethholder = "0x0B925eD163218f6662a35e0f0371Ac234f9E9371";
     await unlockAccount(stethholder);
-    var steth = await IERC20.at(contractList.fxn.feeToken);
+    var wsteth = await IERC20.at(contractList.fxn.feeToken);
 
-    await steth.transfer(feeQueue.address,web3.utils.toWei("10.0", "ether"),{from:stethholder,gasPrice:0})
+    await wsteth.transfer(feeQueue.address,web3.utils.toWei("10.0", "ether"),{from:wstethholder,gasPrice:0})
     await fxn.transfer(feeQueue.address, web3.utils.toWei("100.0", "ether"), {from:deployer});
     await booster.feeToken().then(a=>console.log("feeToken: " +a))
     await booster.feeDistro().then(a=>console.log("feeDistro: " +a))
@@ -316,11 +317,11 @@ contract("FXN locking", async accounts => {
     await fxn.balanceOf(contractList.system.treasury).then(a=>console.log("fxn on treasury: " +a));
     await fxn.balanceOf(staking.address).then(a=>console.log("fxn on staking: " +a));
     await fxn.balanceOf(voteproxy.address).then(a=>console.log("fxn on voteproxy: " +a));
-    await steth.balanceOf(feeQueue.address).then(a=>console.log("steth on fee queue: " +a));
-    await steth.balanceOf(staking.address).then(a=>console.log("steth on staking: " +a));
-    await steth.balanceOf(contractList.system.treasury).then(a=>console.log("steth on treasury: " +a));
+    await wsteth.balanceOf(feeQueue.address).then(a=>console.log("wsteth on fee queue: " +a));
+    await wsteth.balanceOf(staking.address).then(a=>console.log("wsteth on staking: " +a));
+    await wsteth.balanceOf(contractList.system.treasury).then(a=>console.log("wsteth on treasury: " +a));
 
-    await steth.transfer(feeQueue.address,web3.utils.toWei("10.0", "ether"),{from:stethholder,gasPrice:0})
+    await wsteth.transfer(feeQueue.address,web3.utils.toWei("10.0", "ether"),{from:stethholder,gasPrice:0})
     await fxn.transfer(feeQueue.address, web3.utils.toWei("100.0", "ether"), {from:deployer});
     await booster.feeToken().then(a=>console.log("feeToken: " +a))
     await booster.feeDistro().then(a=>console.log("feeDistro: " +a))
@@ -330,9 +331,9 @@ contract("FXN locking", async accounts => {
     await fxn.balanceOf(contractList.system.treasury).then(a=>console.log("fxn on treasury: " +a));
     await fxn.balanceOf(staking.address).then(a=>console.log("fxn on staking: " +a));
     await fxn.balanceOf(voteproxy.address).then(a=>console.log("fxn on voteproxy: " +a));
-    await steth.balanceOf(feeQueue.address).then(a=>console.log("steth on fee queue: " +a));
-    await steth.balanceOf(staking.address).then(a=>console.log("steth on staking: " +a));
-    await steth.balanceOf(contractList.system.treasury).then(a=>console.log("steth on treasury: " +a));
+    await wsteth.balanceOf(feeQueue.address).then(a=>console.log("wsteth on fee queue: " +a));
+    await wsteth.balanceOf(staking.address).then(a=>console.log("wsteth on staking: " +a));
+    await wsteth.balanceOf(contractList.system.treasury).then(a=>console.log("wsteth on treasury: " +a));
 
     //earn
     await staking.claimableRewards(userA).then(a=>console.log("claimable: " +a))
