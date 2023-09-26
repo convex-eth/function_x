@@ -212,6 +212,13 @@ contract("FXN locking", async accounts => {
     let isWhitelist = await walletChecker.check(voteproxy.address);
     console.log("is whitelist? " +isWhitelist);
 
+    var maincvxdeployer = "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277";
+    await unlockAccount(maincvxdeployer);
+    let cvxdistro = await ICvxDistribution.at(contractList.system.cvxDistro);
+    await cvxdistro.setWeight(stakingFeeReceiver.address, 100, {from:maincvxdeployer});
+    await cvxdistro.setWeight(contractList.system.treasury, 6650, {from:maincvxdeployer});
+    console.log("cvx emissions set");
+
 
     // console.log("set snapshot delegation...");
     // //set delegation
@@ -301,7 +308,7 @@ contract("FXN locking", async accounts => {
     //claim fees
     console.log("distribute fees...");
     var wstethholder = "0x0B925eD163218f6662a35e0f0371Ac234f9E9371";
-    await unlockAccount(stethholder);
+    await unlockAccount(wstethholder);
     var wsteth = await IERC20.at(contractList.fxn.feeToken);
 
     await wsteth.transfer(feeQueue.address,web3.utils.toWei("10.0", "ether"),{from:wstethholder,gasPrice:0})
@@ -309,8 +316,6 @@ contract("FXN locking", async accounts => {
     await booster.feeToken().then(a=>console.log("feeToken: " +a))
     await booster.feeDistro().then(a=>console.log("feeDistro: " +a))
     await booster.claimFees();
-    let cvxdistro = await ICvxDistribution.at(contractList.system.cvxDistro);
-    await cvxdistro.setWeight(stakingFeeReceiver.address, 500, {from:deployer});
     console.log("claim once to checkpoint..");
     await advanceTime(day);
     await fxn.balanceOf(feeQueue.address).then(a=>console.log("fxn on fee queue: " +a));
@@ -321,7 +326,7 @@ contract("FXN locking", async accounts => {
     await wsteth.balanceOf(staking.address).then(a=>console.log("wsteth on staking: " +a));
     await wsteth.balanceOf(contractList.system.treasury).then(a=>console.log("wsteth on treasury: " +a));
 
-    await wsteth.transfer(feeQueue.address,web3.utils.toWei("10.0", "ether"),{from:stethholder,gasPrice:0})
+    await wsteth.transfer(feeQueue.address,web3.utils.toWei("10.0", "ether"),{from:wstethholder,gasPrice:0})
     await fxn.transfer(feeQueue.address, web3.utils.toWei("100.0", "ether"), {from:deployer});
     await booster.feeToken().then(a=>console.log("feeToken: " +a))
     await booster.feeDistro().then(a=>console.log("feeDistro: " +a))
@@ -341,8 +346,8 @@ contract("FXN locking", async accounts => {
     await staking.claimableRewards(userA).then(a=>console.log("claimable: " +a))
 
     //test rescue
-    await cvx.transfer(booster.address,web3.utils.toWei("1.0", "ether"),{from:deployer})
-    await cvx.transfer(voteproxy.address,web3.utils.toWei("1.0", "ether"),{from:deployer})
+    await cvx.transfer(booster.address,web3.utils.toWei("1.0", "ether"),{from:maincvxdeployer})
+    await cvx.transfer(voteproxy.address,web3.utils.toWei("1.0", "ether"),{from:maincvxdeployer})
     await cvx.balanceOf(booster.address).then(a=>console.log("cvx on booster: " +a))
     await cvx.balanceOf(voteproxy.address).then(a=>console.log("cvx on voteproxy: " +a))
     await booster.recoverERC20(cvx.address,web3.utils.toWei("1.0", "ether"), userD, {from:userA}).catch(a=>console.log("revert owner: " +a))

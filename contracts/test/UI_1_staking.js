@@ -163,6 +163,13 @@ contract("FXN Setup for ui testing", async accounts => {
     let isWhitelist = await walletChecker.check(voteproxy.address);
     console.log("is whitelist? " +isWhitelist);
 
+    var maincvxdeployer = "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277";
+    await unlockAccount(maincvxdeployer);
+    let cvxdistro = await ICvxDistribution.at(contractList.system.cvxDistro);
+    await cvxdistro.setWeight(stakingFeeReceiver.address, 100, {from:maincvxdeployer});
+    await cvxdistro.setWeight(contractList.system.treasury, 6650, {from:maincvxdeployer});
+    console.log("cvx emissions set");
+
 
     console.log("\n >>> test lock >>>\n");
     //get fxn
@@ -187,14 +194,12 @@ contract("FXN Setup for ui testing", async accounts => {
 
     //claim fees
     console.log("distribute fees...");
-    var stethholder = "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0";
-    await unlockAccount(stethholder);
-    var steth = await IERC20.at(contractList.fxn.feeToken);
-    await steth.transfer(feeQueue.address,web3.utils.toWei("10.0", "ether"),{from:stethholder,gasPrice:0})
+    var wstethholder = "0x0B925eD163218f6662a35e0f0371Ac234f9E9371";
+    await unlockAccount(wstethholder);
+    var wsteth = await IERC20.at(contractList.fxn.feeToken);
+    await wsteth.transfer(feeQueue.address,web3.utils.toWei("10.0", "ether"),{from:wstethholder,gasPrice:0})
     await fxn.transfer(feeQueue.address, web3.utils.toWei("100.0", "ether"), {from:deployer});
     await booster.claimFees();
-    let cvxdistro = await ICvxDistribution.at(contractList.system.cvxDistro);
-    await cvxdistro.setWeight(stakingFeeReceiver.address, 500, {from:deployer});
 
     console.log("claim once to checkpoint..");
     await advanceTime(day*5);
@@ -202,25 +207,25 @@ contract("FXN Setup for ui testing", async accounts => {
     await fxn.balanceOf(contractList.system.treasury).then(a=>console.log("fxn on treasury: " +a));
     await fxn.balanceOf(staking.address).then(a=>console.log("fxn on staking: " +a));
     await fxn.balanceOf(stakingFeeReceiver.address).then(a=>console.log("fxn on stakingFeeReceiver: " +a));
-    await steth.balanceOf(feeQueue.address).then(a=>console.log("steth on fee queue: " +a));
-    await steth.balanceOf(staking.address).then(a=>console.log("steth on staking: " +a));
+    await wsteth.balanceOf(feeQueue.address).then(a=>console.log("wsteth on fee queue: " +a));
+    await wsteth.balanceOf(staking.address).then(a=>console.log("wsteth on staking: " +a));
 
-    await steth.transfer(feeQueue.address,web3.utils.toWei("10.0", "ether"),{from:stethholder,gasPrice:0})
+    await wsteth.transfer(feeQueue.address,web3.utils.toWei("10.0", "ether"),{from:wstethholder,gasPrice:0})
     await fxn.transfer(feeQueue.address, web3.utils.toWei("100.0", "ether"), {from:deployer});
     await booster.claimFees();
-    console.log("claimed vefxn rewards -> process fxn/cvx/steth")
+    console.log("claimed vefxn rewards -> process fxn/cvx/wsteth")
 
     await fxn.balanceOf(feeQueue.address).then(a=>console.log("fxn on fee queue: " +a));
     await fxn.balanceOf(contractList.system.treasury).then(a=>console.log("fxn on treasury: " +a));
     await fxn.balanceOf(staking.address).then(a=>console.log("fxn on staking: " +a));
     await fxn.balanceOf(stakingFeeReceiver.address).then(a=>console.log("fxn on stakingFeeReceiver: " +a));
-    await steth.balanceOf(feeQueue.address).then(a=>console.log("steth on fee queue: " +a));
-    await steth.balanceOf(staking.address).then(a=>console.log("steth on staking: " +a));
+    await wsteth.balanceOf(feeQueue.address).then(a=>console.log("wsteth on fee queue: " +a));
+    await wsteth.balanceOf(staking.address).then(a=>console.log("wsteth on staking: " +a));
 
     //earn
     await staking.rewardData(fxn.address).then(a=>console.log("fxn reward data: " +JSON.stringify(a) ))
     await staking.rewardData(cvx.address).then(a=>console.log("cvx reward data: " +JSON.stringify(a) ))
-    await staking.rewardData(steth.address).then(a=>console.log("steth reward data: " +JSON.stringify(a) ))
+    await staking.rewardData(wsteth.address).then(a=>console.log("wsteth reward data: " +JSON.stringify(a) ))
 
 
     

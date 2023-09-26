@@ -179,13 +179,6 @@ contract("cvxFXN Deploy", async accounts => {
     await staking.addReward(contractList.fxn.feeToken, stakingFeeReceiver.address, {from:deployer});
     console.log("staking params set")
 
-    var maincvxdeployer = "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277";
-    await unlockAccount(maincvxdeployer);
-    let cvxdistro = await ICvxDistribution.at(contractList.system.cvxDistro);
-    await cvxdistro.setWeight(stakingFeeReceiver.address, 100, {from:maincvxdeployer});
-    await cvxdistro.setWeight(contractList.system.treasury, 6650, {from:maincvxdeployer});
-    console.log("cvx emissions set");
-
     console.log("set snapshot delegation...");
     //set delegation
     let delegation = await IDelegation.at("0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446");
