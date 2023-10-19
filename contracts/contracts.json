@@ -12,7 +12,9 @@
         "fxnDepositor": "0x56B3c8eF8A095f8637B6A84942aA898326B82b91",
         "cvxFxnStaking": "0xEC60Cd4a5866fb3B0DD317A46d3B474a24e06beF",
         "cvxFxnStakingFeeReceiver": "0x8259D9759E6dDfe46ee0e992608E3FeCF5b62937",
-        "vefxnRewardQueue": "0x30575fDCFb2b76096047F0a8651b52159aB835f7"
+        "vefxnRewardQueue": "0x30575fDCFb2b76096047F0a8651b52159aB835f7",
+        "lpRewardHook": "0x51F6d9C0d26f6A518333164b8D1e6885AecD30A4",
+        "treasuryManager": "0x148e58bB8d9c5278b6505b40923e6152B5238Cf8"
     },
     "fxn": {
         "fxn": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
