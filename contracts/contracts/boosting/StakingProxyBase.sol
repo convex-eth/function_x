@@ -201,7 +201,7 @@ contract StakingProxyBase is IProxyVault{
         address _to,
         bytes memory _data
     ) external onlyOwner returns (bool, bytes memory) {
-        require(_to != fxn, "!invalid target");
+        require(_to != fxn && _to != stakingToken && _to != rewards, "!invalid target");
 
         //only allow certain calls to staking address
         if(_to == gaugeAddress){
