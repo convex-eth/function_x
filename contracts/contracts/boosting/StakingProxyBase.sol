@@ -184,7 +184,9 @@ contract StakingProxyBase is IProxyVault{
     function _transferTokens(address[] memory _tokens) internal{
         //transfer all tokens
         for(uint256 i = 0; i < _tokens.length; i++){
-            if(_tokens[i] != fxn){
+            //dont allow fxn (need to take fee)
+            //dont allow gauge token transfer
+            if(_tokens[i] != fxn && _tokens[i] != gaugeAddress){
                 uint256 bal = IERC20(_tokens[i]).balanceOf(address(this));
                 if(bal > 0){
                     IERC20(_tokens[i]).safeTransfer(owner, bal);
