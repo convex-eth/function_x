@@ -10,6 +10,8 @@ contract MockGauge is ERC20{
     using SafeERC20 for IERC20;
 
     IERC20 stakingToken;
+    mapping(address => address) public redirect;
+    mapping(address => uint256) public mintRewards;
 
     constructor(IERC20 _token) ERC20(
             "Gauge Token",
@@ -24,11 +26,12 @@ contract MockGauge is ERC20{
     function workingBalanceOf(address _account) external view returns(uint256){
         return balanceOf(_account);
     }
-    function user_checkpoint(address) external{
-
+    function user_checkpoint(address _account) external returns(bool){
+        mintRewards[_account] += 1e18;
+        return true;
     }
-    function integrate_fraction(address) external view returns (uint256){
-
+    function integrate_fraction(address _account) external view returns (uint256){
+        return mintRewards[_account];
     }
 
     function deposit(uint256 _amount) external {
@@ -41,12 +44,32 @@ contract MockGauge is ERC20{
         stakingToken.safeTransfer(msg.sender, _amount);
     }
 
-    function claim() external{
-
+    function getActiveRewardTokens() external pure returns (address[] memory _rewardTokens){
+        _rewardTokens = new address[](3);
+        _rewardTokens[0] = address(0x365AccFCa291e7D3914637ABf1F7635dB165Bb09);
+        _rewardTokens[1] = address(0xD533a949740bb3306d119CC777fa900bA034cd52);
+        _rewardTokens[2] = address(0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B);
     }
 
-    function setRewardReceiver(address) external{
-        
+    function claim() external{
+        uint256 bal = IERC20(0x365AccFCa291e7D3914637ABf1F7635dB165Bb09).balanceOf(address(this));
+        if(bal > 1e18){
+            IERC20(0x365AccFCa291e7D3914637ABf1F7635dB165Bb09).transfer(redirect[msg.sender],1e18);
+        }
+
+        bal = IERC20(0xD533a949740bb3306d119CC777fa900bA034cd52).balanceOf(address(this));
+        if(bal > 1e18){
+            IERC20(0xD533a949740bb3306d119CC777fa900bA034cd52).transfer(redirect[msg.sender],1e18);
+        }
+
+        bal = IERC20(0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B).balanceOf(address(this));
+        if(bal > 1e18){
+            IERC20(0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B).transfer(redirect[msg.sender],1e18);
+        }
+    }
+
+    function setRewardReceiver(address _redirect) external{
+        redirect[msg.sender] = _redirect;
     }
 
     function toggleVoteSharing(address) external{

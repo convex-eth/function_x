@@ -31,12 +31,11 @@ contract Booster{
 
     address public poolManager;
     address public rewardManager;
-    address public feeclaimer;
     bool public isShutdown;
     address public feeQueue;
-    bool public feeQueueProcess;
     address public feeToken;
     address public feeDistro;
+    address public boostFeeQueue;
 
     // mapping(address=>mapping(address=>bool)) public feeClaimMap;
 
@@ -98,17 +97,10 @@ contract Booster{
         require(success, "Proxy Call Fail");
     }
 
-    //set fee queue, a contract fees are moved to when claiming
-    function setFeeQueue(address _queue, bool _process) external onlyOwner{
+    //set fee queue for vefxn
+    function setFeeQueue(address _queue) external onlyOwner{
         feeQueue = _queue;
-        feeQueueProcess = _process;
-        emit FeeQueueChanged(_queue, _process);
-    }
-
-    //set who can call claim fees, 0x0 address will allow anyone to call
-    function setFeeClaimer(address _claimer) external onlyOwner{
-        feeclaimer = _claimer;
-        emit FeeClaimerChanged(_claimer);
+        emit FeeQueueChanged(_queue);
     }
 
     function setFeeToken(address _feeToken, address _distro) external onlyOwner{
@@ -181,8 +173,13 @@ contract Booster{
     function setPoolFeeDeposit(address _deposit) external onlyOwner{
         require(!isShutdown,"shutdown");
 
+        //change on fee registry
         bytes memory data = abi.encodeWithSelector(bytes4(keccak256("setDepositAddress(address)")), _deposit);
         _proxyCall(feeRegistry,data);
+
+        //also change here
+        boostFeeQueue = _deposit;
+        emit BoostFeeQueueChanged(_deposit);
     }
 
     //add pool on registry
@@ -226,20 +223,19 @@ contract Booster{
         return vault;
     }
 
-    //claim fees - if set, move to a fee queue that rewards can pull from
+    //claim fees for vefxn
     function claimFees() external {
-        require(feeclaimer == address(0) || feeclaimer == msg.sender, "!auth");
+        require(feeQueue != address(0),"!queue");
 
-        uint256 bal;
-        if(feeQueue != address(0)){
-            bal = IStaker(proxy).claimFees(feeDistro, feeToken, feeQueue);
-            if(feeQueueProcess){
-                IFeeReceiver(feeQueue).processFees();
-            }
-        }else{
-            bal = IStaker(proxy).claimFees(feeDistro, feeToken, address(this));
-        }
-        emit FeesClaimed(bal);
+        IStaker(proxy).claimFees(feeDistro, feeToken, feeQueue);
+        IFeeReceiver(feeQueue).processFees();
+    }
+
+    //claim fees for boosting
+    function claimBoostFees() external {
+        require(boostFeeQueue != address(0),"!queue");
+
+        IFeeReceiver(boostFeeQueue).processFees();
     }
 
 
@@ -247,13 +243,12 @@ contract Booster{
     /* ========== EVENTS ========== */
     event SetPendingOwner(address indexed _address);
     event OwnerChanged(address indexed _address);
-    event FeeQueueChanged(address indexed _address, bool _useProcess);
-    event FeeClaimerChanged(address indexed _address);
+    event FeeQueueChanged(address indexed _address);
+    event BoostFeeQueueChanged(address indexed _address);
     event FeeTokenSet(address indexed _address, address _distro);
     event RewardManagerChanged(address indexed _address);
     event PoolManagerChanged(address indexed _address);
     event Shutdown();
     event DelegateSet(address indexed _address);
-    event FeesClaimed(uint256 _amount);
     event Recovered(address indexed _token, uint256 _amount);
 }

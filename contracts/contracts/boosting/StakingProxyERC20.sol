@@ -76,17 +76,18 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
 
         //check fxn
         token_addresses[0] = fxn;
-        total_earned[0] = IERC20(fxn).balanceOf(address(this)) * IFeeRegistry(feeRegistry).totalFees() / FEE_DENOMINATOR;
+        total_earned[0] = IERC20(fxn).balanceOf(address(this)) * (FEE_DENOMINATOR - IFeeRegistry(feeRegistry).totalFees()) / FEE_DENOMINATOR;
 
-        //add any tokens that happen to be already claimed but sitting on the vault
+        //get difference as total earned
         for(uint256 i = 0; i < rewardTokens.length; i++){
-            token_addresses[i] = rewardTokens[i];
+            token_addresses[i+1] = rewardTokens[i];
             total_earned[i+1] = IERC20(rewardTokens[i]).balanceOf(owner) - previousBalance[i] + IERC20(rewardTokens[i]).balanceOf(address(this));
         }
 
+        //also add an extra rewards from convex's side
         IRewards.EarnedData[] memory extraRewards = IRewards(rewards).claimableRewards(address(this));
         for(uint256 i = 0; i < extraRewards.length; i++){
-            token_addresses[i+rewardTokens.length] = extraRewards[i].token;
+            token_addresses[i+rewardTokens.length+1] = extraRewards[i].token;
             total_earned[i+rewardTokens.length+1] = extraRewards[i].amount;
         }
     }

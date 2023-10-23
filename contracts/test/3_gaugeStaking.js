@@ -19,6 +19,7 @@ const StakingProxyERC20 = artifacts.require("StakingProxyERC20");
 
 
 const IERC20 = artifacts.require("IERC20");
+const IGaugeController = artifacts.require("IGaugeController");
 
 
 const addAccount = async (address) => {
@@ -107,7 +108,7 @@ const fastForward = async seconds => {
   await mineBlock();
 };
 
-contract("cvxFXN Deploy", async accounts => {
+contract("staking platform", async accounts => {
   it("should successfully run", async () => {
     
     let deployer = contractList.system.deployer;
@@ -158,20 +159,18 @@ contract("cvxFXN Deploy", async accounts => {
     let feeReg = await FeeRegistry.new({from:deployer});
     let poolReg = await PoolRegistry.new({from:deployer});
     let poolRewards = await MultiRewards.new(poolReg.address, {from:deployer});
-    let vault_erc = await StakingProxyERC20.new(poolReg.address, feeReg.address, contractList.fxn.gaugeController, {from:deployer});
+    let vault_erc = await StakingProxyERC20.new(poolReg.address, feeReg.address, contractList.fxn.tokenMinter, {from:deployer});
     let booster = await Booster.new(voteproxy.address, fxndeposit.address, cvxfxn.address, poolReg.address, feeReg.address, {from:deployer} );
-    // contractList.system.booster = booster.address;
-    // contractList.system.feeReg = feeReg.address;
-    // contractList.system.poolReg = poolReg.address;
-    // contractList.system.poolRewards = poolRewards.address;
-    // contractList.system.vault_erc = vault_erc.address;
+    let poolFeeQueue = await FeeDepositV2.new(contractList.system.voteProxy, contractList.system.cvxFxn, contractList.system.cvxFxnStakingFeeReceiver, {from:deployer});
+    contractList.system.booster = booster.address;
+    contractList.system.feeReg = feeReg.address;
+    contractList.system.poolReg = poolReg.address;
+    contractList.system.poolRewards = poolRewards.address;
+    contractList.system.vault_erc = vault_erc.address;
     // jsonfile.writeFileSync("./contracts.json", contractList, { spaces: 4 });
     console.log(contractList.system);
 
     console.log("deployed");
-
-    await booster.setPendingOwner(multisig,{from:deployer});
-    await booster.acceptPendingOwner({from:multisig,gasPrice:0});
 
     console.log("old booster at: " +oldbooster.address);
     await oldbooster.isShutdown().then(a=>console.log("old is shutdown? " +a));
@@ -180,8 +179,16 @@ contract("cvxFXN Deploy", async accounts => {
     await voteproxy.operator().then(a=>console.log("current operator: " +a));
     await voteproxy.setOperator(booster.address,{from:multisig,gasPrice:0})
     await voteproxy.operator().then(a=>console.log("current operator: " +a));
-    await booster.claimOperatorRoles({from:multisig,gasPrice:0});
+   
+    await booster.setFeeToken(contractList.fxn.feeToken, contractList.fxn.vefxnRewardDistro, {from:deployer,gasPrice:0});
+    await booster.setFeeQueue(feeQueue.address,{from:deployer,gasPrice:0});
+
+    await booster.claimOperatorRoles({from:deployer,gasPrice:0});
     await booster.setPoolRewardImplementation(poolRewards.address,{from:deployer,gasPrice:0});
+    await booster.setPoolFeeDeposit(poolFeeQueue.address,{from:deployer,gasPrice:0});
+
+    await booster.setPendingOwner(multisig,{from:deployer});
+    await booster.acceptPendingOwner({from:multisig,gasPrice:0});
     console.log("set new booster as operator");
 
 
@@ -193,6 +200,13 @@ contract("cvxFXN Deploy", async accounts => {
     console.log("pool token: " +lptoken.address);
     console.log("gauge address: " +gauge.address);
 
+    var controller = await IGaugeController.at(contractList.fxn.gaugeController);
+    var controllerAdmin = await controller.admin();
+    await unlockAccount(controllerAdmin);
+    await controller.add_type("testtype",0,{from:controllerAdmin,gasPrice:0});
+    await controller.add_gauge(gauge.address,0,0,{from:controllerAdmin,gasPrice:0});
+    console.log("gauge added to controller");
+
     var tx = await booster.addPool(vault_erc.address, gauge.address, lptoken.address,{from:deployer,gasPrice:0});
     console.log("pool added, gas: " +tx.receipt.gasUsed);
     var poolid = Number(await poolReg.poolLength()) - 1;
@@ -202,13 +216,16 @@ contract("cvxFXN Deploy", async accounts => {
     console.log(poolinfo);
 
 
-    console.log("\n\nstake to new pool...");
+    console.log("transfer lp tokens to actingUser...");
     let holder = "0xf42e2b73ea79812a7c3e4ba8ed052c523765719f";
     let depositAmount = "10.0"
     await unlockAccount(holder);
     await lptoken.transfer(actingUser, web3.utils.toWei(depositAmount, "ether"),{from:holder,gasPrice:0});
     var tokenBalance = await lptoken.balanceOf(actingUser);
     console.log("tokenBalance: " +tokenBalance);
+
+
+    console.log("\n\nstake to new pool...");
 
     //create vault
     var tx = await booster.createVault(poolid,{from:actingUser});
@@ -238,6 +255,20 @@ contract("cvxFXN Deploy", async accounts => {
     await gauge.balanceOf(vault.address).then(a=>console.log("gauge balance of vault: " +a));
     tokenBalance = await lptoken.balanceOf(actingUser);
     console.log("tokenBalance: " +tokenBalance);
+
+    await gauge.getActiveRewardTokens().then(a=>console.log("active rewards: " +JSON.stringify(a)));
+    await vault.earned.call().then(a=>console.log("earned: " +JSON.stringify(a)));
+
+    await fxn.balanceOf(actingUser).then(a=>console.log("balance of fxn: " +a))
+    await fxn.balanceOf(poolFeeQueue.address).then(a=>console.log("balance of fxn feeQueue: " +a))
+    await cvx.balanceOf(actingUser).then(a=>console.log("balance of cvx: " +a))
+
+    await vault.getReward();
+    console.log("rewards claimed");
+
+    await fxn.balanceOf(actingUser).then(a=>console.log("balance of fxn: " +a))
+    await fxn.balanceOf(poolFeeQueue.address).then(a=>console.log("balance of fxn feeQueue: " +a))
+    await cvx.balanceOf(actingUser).then(a=>console.log("balance of cvx: " +a))
 
     console.log("done");
     
