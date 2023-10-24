@@ -3,16 +3,9 @@ pragma solidity >=0.8.0;
 
 interface IFxnGauge{
 
-    // function totalLiquidityLocked() external view returns (uint256);
-    // function lockedLiquidityOf(address account) external view returns (uint256);
-
-    // function toggleValidVeFXSProxy(address proxy_address) external;
-    // function proxyToggleStaker(address staker_address) external;
-    // function stakerSetVeFXSProxy(address proxy_address) external;
-    // function getReward(address destination_address) external returns (uint256[] memory);
-
     //basics
     function stakingToken() external view returns(address);
+    function totalSupply() external view returns(uint256);
     function workingSupply() external view returns(uint256);
     function workingBalanceOf(address _account) external view returns(uint256);
     function deposit(uint256 _amount) external;
@@ -29,4 +22,6 @@ interface IFxnGauge{
     function numAcceptedStakers(address _account) external view returns (uint256);
     function sharedBalanceOf(address _account) external view returns (uint256);
 
+    //rewards
+    function rewardData(address _token) external view returns(uint96 queued, uint80 rate, uint40 lastUpdate, uint40 finishAt);
 }

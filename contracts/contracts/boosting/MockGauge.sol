@@ -20,6 +20,13 @@ contract MockGauge is ERC20{
         stakingToken = _token;
     }
 
+    function rewardData(address) external view returns(uint96 queued, uint80 rate, uint40 lastUpdate, uint40 finishAt){
+        queued = 0;
+        rate = 1e17;
+        lastUpdate = uint40(block.timestamp);
+        finishAt = uint40(block.timestamp + 7 days);
+    }
+
     function workingSupply() external view returns(uint256){
         return totalSupply();
     }

@@ -16,6 +16,7 @@ const MockGauge = artifacts.require("MockGauge");
 const MultiRewards = artifacts.require("MultiRewards");
 const StakingProxyBase = artifacts.require("StakingProxyBase");
 const StakingProxyERC20 = artifacts.require("StakingProxyERC20");
+const PoolUtilities = artifacts.require("PoolUtilities");
 
 
 const IERC20 = artifacts.require("IERC20");
@@ -162,11 +163,13 @@ contract("staking platform", async accounts => {
     let vault_erc = await StakingProxyERC20.new(poolReg.address, feeReg.address, contractList.fxn.tokenMinter, {from:deployer});
     let booster = await Booster.new(voteproxy.address, fxndeposit.address, cvxfxn.address, poolReg.address, feeReg.address, {from:deployer} );
     let poolFeeQueue = await FeeDepositV2.new(contractList.system.voteProxy, contractList.system.cvxFxn, contractList.system.cvxFxnStakingFeeReceiver, {from:deployer});
+    let poolUtil = await PoolUtilities.new(poolReg.address, {from:deployer});
     contractList.system.booster = booster.address;
     contractList.system.feeReg = feeReg.address;
     contractList.system.poolReg = poolReg.address;
     contractList.system.poolRewards = poolRewards.address;
     contractList.system.vault_erc = vault_erc.address;
+    contractList.system.poolUtility = poolUtil.address;
     // jsonfile.writeFileSync("./contracts.json", contractList, { spaces: 4 });
     console.log(contractList.system);
 
@@ -203,9 +206,10 @@ contract("staking platform", async accounts => {
     var controller = await IGaugeController.at(contractList.fxn.gaugeController);
     var controllerAdmin = await controller.admin();
     await unlockAccount(controllerAdmin);
-    await controller.add_type("testtype",0,{from:controllerAdmin,gasPrice:0});
-    await controller.add_gauge(gauge.address,0,0,{from:controllerAdmin,gasPrice:0});
+    await controller.add_type("testtype",web3.utils.toWei("1.0","ether"),{from:controllerAdmin,gasPrice:0});
+    await controller.add_gauge(gauge.address,0,web3.utils.toWei("1.0","ether"),{from:controllerAdmin,gasPrice:0});
     console.log("gauge added to controller");
+    await controller.gauge_relative_weight(gauge.address).then(a=>console.log("gauge rel weight: " +a))
 
     var tx = await booster.addPool(vault_erc.address, gauge.address, lptoken.address,{from:deployer,gasPrice:0});
     console.log("pool added, gas: " +tx.receipt.gasUsed);
@@ -249,12 +253,8 @@ contract("staking platform", async accounts => {
     tokenBalance = await lptoken.balanceOf(actingUser);
     console.log("tokenBalance: " +tokenBalance);
 
-    await vault.withdraw(web3.utils.toWei(depositAmount,"ether"),{from:actingUser});
-    console.log("withdraw complete");
-
-    await gauge.balanceOf(vault.address).then(a=>console.log("gauge balance of vault: " +a));
-    tokenBalance = await lptoken.balanceOf(actingUser);
-    console.log("tokenBalance: " +tokenBalance);
+    console.log("check reward rates...");
+    await poolUtil.poolRewardRates(gauge.address).then(a=>console.log(JSON.stringify(a)));
 
     await gauge.getActiveRewardTokens().then(a=>console.log("active rewards: " +JSON.stringify(a)));
     await vault.earned.call().then(a=>console.log("earned: " +JSON.stringify(a)));
@@ -270,6 +270,21 @@ contract("staking platform", async accounts => {
     await fxn.balanceOf(poolFeeQueue.address).then(a=>console.log("balance of fxn feeQueue: " +a))
     await cvx.balanceOf(actingUser).then(a=>console.log("balance of cvx: " +a))
 
+
+    console.log("withdraw...");
+
+    await vault.withdraw(web3.utils.toWei(depositAmount,"ether"),{from:actingUser});
+    console.log("withdraw complete");
+
+    await gauge.balanceOf(vault.address).then(a=>console.log("gauge balance of vault: " +a));
+    tokenBalance = await lptoken.balanceOf(actingUser);
+    console.log("tokenBalance: " +tokenBalance);
+    
+
+    console.log("check reward rates when no supply...");
+    await poolUtil.poolRewardRates(gauge.address).then(a=>console.log(JSON.stringify(a)));
+    console.log("---")
+    await poolUtil.poolRewardRatesById(poolid).then(a=>console.log(JSON.stringify(a)));
     console.log("done");
     
   });
