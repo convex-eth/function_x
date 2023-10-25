@@ -4,7 +4,6 @@ pragma solidity 0.8.10;
 import "../interfaces/IFxnToken.sol";
 import "../interfaces/IFxnGauge.sol";
 import "../interfaces/IGaugeController.sol";
-import "../interfaces/IFxnRewardAccumulator.sol";
 import "../interfaces/IPoolRegistry.sol";
 
 /*
@@ -37,7 +36,7 @@ contract PoolUtilities{
         uint256 gaugeWeight = IGaugeController(gaugeController).gauge_relative_weight(_gauge);
 
         //get list of reward tokens
-        address[] memory rewardTokens = IFxnRewardAccumulator(_gauge).getActiveRewardTokens();
+        address[] memory rewardTokens = IFxnGauge(_gauge).getActiveRewardTokens();
         rates = new uint256[](rewardTokens.length + 1);
         tokens = new address[](rewardTokens.length + 1);
 

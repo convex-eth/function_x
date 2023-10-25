@@ -24,4 +24,9 @@ interface IFxnGauge{
 
     //rewards
     function rewardData(address _token) external view returns(uint96 queued, uint80 rate, uint40 lastUpdate, uint40 finishAt);
+    function getActiveRewardTokens() external view returns (address[] memory _rewardTokens);
+    function rewardReceiver(address account) external view returns (address);
+    function setRewardReceiver(address _newReceiver) external;
+    function claim() external;
+    function claim(address account) external;
 }

@@ -59,7 +59,7 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
     //helper function to combine earned tokens on staking contract and any tokens that are on this vault
     function earned() external override returns (address[] memory token_addresses, uint256[] memory total_earned) {
         //get list of reward tokens
-        address[] memory rewardTokens = IFxnRewardAccumulator(gaugeAddress).getActiveRewardTokens();
+        address[] memory rewardTokens = IFxnGauge(gaugeAddress).getActiveRewardTokens();
         uint256[] memory previousBalance = new uint256[](rewardTokens.length);
         token_addresses = new address[](rewardTokens.length + IRewards(rewards).rewardTokenLength() + 1);// +1 for fxn
         total_earned = new uint256[](rewardTokens.length + IRewards(rewards).rewardTokenLength() + 1); // +1 for fxn
@@ -72,7 +72,7 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
         
         //simulate claiming
         IFxnTokenMinter(fxnMinter).mint(gaugeAddress);
-        IFxnRewardAccumulator(gaugeAddress).claim();
+        IFxnGauge(gaugeAddress).claim();
 
         //check fxn
         token_addresses[0] = fxn;
@@ -112,7 +112,7 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
             IFxnTokenMinter(fxnMinter).mint(gaugeAddress);
 
             //extras (will get claimed directly to owner)
-            IFxnRewardAccumulator(gaugeAddress).claim();
+            IFxnGauge(gaugeAddress).claim();
         }
 
         //process fxn fees
@@ -132,7 +132,7 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
             IFxnTokenMinter(fxnMinter).mint(gaugeAddress);
 
             //extras
-            IFxnRewardAccumulator(gaugeAddress).claim();
+            IFxnGauge(gaugeAddress).claim();
         }
 
         //process fxn fees

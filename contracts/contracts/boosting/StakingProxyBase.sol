@@ -4,7 +4,6 @@ pragma solidity 0.8.10;
 import "../interfaces/IProxyVault.sol";
 import "../interfaces/IFeeRegistry.sol";
 import "../interfaces/IFxnGauge.sol";
-import "../interfaces/IFxnRewardAccumulator.sol";
 import "../interfaces/IFxnTokenMinter.sol";
 import "../interfaces/IRewards.sol";
 import "../interfaces/IPoolRegistry.sol";
@@ -69,7 +68,7 @@ contract StakingProxyBase is IProxyVault{
         //set extra rewards to send directly back to owner
         //..could technically save gas by using claim(address,address) but
         //since claim is unguarded would be better UX to set receiver in case called by some other address
-        IFxnRewardAccumulator(gaugeAddress).setRewardReceiver(owner);
+        IFxnGauge(gaugeAddress).setRewardReceiver(owner);
     }
 
     function changeRewards(address _rewardsAddress) external onlyAdmin{
