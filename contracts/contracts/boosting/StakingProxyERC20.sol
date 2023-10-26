@@ -53,6 +53,9 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
 
         //checkpoint rewards
         _checkpointRewards();
+
+        //send back to owner
+        IERC20(stakingToken).safeTransfer(msg.sender, _amount);
     }
 
 
@@ -124,7 +127,7 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
 
     //auxiliary function to supply token list to sweep while claiming
     //can also be used to rescue tokens on the vault
-    function getReward(bool _claim, address[] calldata _rewardTokenList) external override{
+    function getReward(bool _claim, address[] calldata _tokenList) external override{
 
         //claim
         if(_claim){
@@ -139,7 +142,7 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
         _processFxn();
 
         //transfer
-        _transferTokens(_rewardTokenList);
+        _transferTokens(_tokenList);
 
         //extra rewards
         _processExtraRewards();

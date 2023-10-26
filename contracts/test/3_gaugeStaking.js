@@ -273,12 +273,16 @@ contract("staking platform", async accounts => {
 
     console.log("withdraw...");
 
+    tokenBalance = await lptoken.balanceOf(actingUser);
+    await gauge.balanceOf(vault.address).then(a=>console.log("gauge balance of vault: " +a));
+    console.log("tokenBalance before: " +tokenBalance);
+
     await vault.withdraw(web3.utils.toWei(depositAmount,"ether"),{from:actingUser});
     console.log("withdraw complete");
 
     await gauge.balanceOf(vault.address).then(a=>console.log("gauge balance of vault: " +a));
     tokenBalance = await lptoken.balanceOf(actingUser);
-    console.log("tokenBalance: " +tokenBalance);
+    console.log("tokenBalance after: " +tokenBalance);
     
 
     console.log("check reward rates when no supply...");
