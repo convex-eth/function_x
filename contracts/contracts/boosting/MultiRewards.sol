@@ -11,7 +11,14 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
 
+/*
+Multi-token reward contract
 
+Add additional rewards to pools on convex side.
+
+Trust assumptions: Only official vaults can call and assumed their implementation on setting balances is correct.
+Since new pools and new vault implementations can be made, this means it is possible to create a pool with a specialized vault to manipulate weighting.
+*/
 contract MultiRewards is IRewards{
     using SafeERC20 for IERC20;
 
@@ -68,13 +75,14 @@ contract MultiRewards is IRewards{
         poolId = _pid;
         if(_startActive){
             active = true;
+            emit Activate();
         }
         init = true;
     }
 
     /* ========== ADMIN CONFIGURATION ========== */
 
-    //turn on rewards contract
+    //turn on rewards contract - vault can save gas if not in use
     function setActive() external onlyOwner{
         active = true;
         emit Activate();
@@ -106,6 +114,7 @@ contract MultiRewards is IRewards{
         emit RewardDistributorApproved(_rewardsToken, _distributor);
     }
 
+    //set reward hook
     function setRewardHook( address _hook ) external onlyOwner{
         rewardHook = _hook;
         emit HookSet(_hook);
@@ -113,6 +122,7 @@ contract MultiRewards is IRewards{
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
+    //deposit - add balance to owner. must be an official vault
     function deposit(address _owner, uint256 _amount) external updateReward(msg.sender){
         //only allow registered vaults to call
         require(IPoolRegistry(poolRegistry).vaultMap(poolId,_owner) == msg.sender, "!auth");
@@ -127,6 +137,7 @@ contract MultiRewards is IRewards{
         }
     }
 
+    //withdraw - remove balance from owner. must be an official vault
     function withdraw(address _owner, uint256 _amount) external updateReward(msg.sender){
         //only allow registered vaults to call
         require(IPoolRegistry(poolRegistry).vaultMap(poolId,_owner) == msg.sender, "!auth");

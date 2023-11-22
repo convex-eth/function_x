@@ -10,7 +10,10 @@ import "../interfaces/IPoolRegistry.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
+/*
+Base class for vaults
 
+*/
 contract StakingProxyBase is IProxyVault{
     using SafeERC20 for IERC20;
 
@@ -35,14 +38,6 @@ contract StakingProxyBase is IProxyVault{
         fxnMinter = _fxnminter;
     }
 
-    function vaultType() external virtual pure returns(VaultType){
-        return VaultType.Erc20Basic;
-    }
-
-    function vaultVersion() external virtual pure returns(uint256){
-        return 1;
-    }
-
     modifier onlyOwner() {
         require(owner == msg.sender, "!auth");
         _;
@@ -51,6 +46,16 @@ contract StakingProxyBase is IProxyVault{
     modifier onlyAdmin() {
         require(vefxnProxy == msg.sender, "!auth_admin");
         _;
+    }
+
+    //vault type
+    function vaultType() external virtual pure returns(VaultType){
+        return VaultType.Erc20Basic;
+    }
+
+    //vault version
+    function vaultVersion() external virtual pure returns(uint256){
+        return 1;
     }
 
     //initialize vault
@@ -66,11 +71,12 @@ contract StakingProxyBase is IProxyVault{
         rewards = _convexRewards;
 
         //set extra rewards to send directly back to owner
-        //..could technically save gas by using claim(address,address) but
+        //..could technically save gas on initialize() by using claim(address,address) but
         //since claim is unguarded would be better UX to set receiver in case called by some other address
         IFxnGauge(gaugeAddress).setRewardReceiver(owner);
     }
 
+    //change convex side extra reward contract
     function changeRewards(address _rewardsAddress) external onlyAdmin{
         
         //remove from old rewards and claim
@@ -85,31 +91,34 @@ contract StakingProxyBase is IProxyVault{
         //set to new rewards
         rewards = _rewardsAddress;
 
-        //update balance
+        //update balance in the reward contract
         _checkpointRewards();
     }
 
-    //checkpoint weight on farm
+    //checkpoint weight on gauge
     function checkpointRewards() external onlyAdmin{
         //checkpoint the gauge
         _checkpointGauge();
     }
 
+    //checkpoint weight on gauge
     function _checkpointGauge() internal{
         //check point
         IFxnGauge(gaugeAddress).user_checkpoint(address(this));
     }
 
+    //set what veFXN proxy this vault is using
     function setVeFXNProxy(address _proxy) external virtual onlyAdmin{
         //set the vefxn proxy
         _setVeFXNProxy(_proxy);
     }
 
+    //set veFXN proxy the vault is using. call acceptSharedVote to start sharing vefxn proxy's boost
     function _setVeFXNProxy(address _proxyAddress) internal{
         //set proxy address on staking contract
         IFxnGauge(gaugeAddress).acceptSharedVote(_proxyAddress);
         if(_proxyAddress == vefxnProxy){
-            //reset back to address 0
+            //reset back to address 0 to default to convex's proxy, dont write if not needed.
             if(usingProxy != address(0)){
                 usingProxy = address(0);
             }
@@ -119,6 +128,7 @@ contract StakingProxyBase is IProxyVault{
         }
     }
 
+    //get rewards and earned are type specific. extend in child class
     function getReward() external virtual{}
     function getReward(bool _claim) external virtual{}
     function getReward(bool _claim, address[] calldata _rewardTokenList) external virtual{}
@@ -146,14 +156,14 @@ contract StakingProxyBase is IProxyVault{
     //apply fees to fxn and send remaining to owner
     function _processFxn() internal{
 
-        //get fee rate from fee registry
+        //get fee rate from fee registry (only need to know total, let deposit contract disperse itself)
         uint256 totalFees = IFeeRegistry(feeRegistry).totalFees();
 
         //send fxn fees to fee deposit
         uint256 fxnBalance = IERC20(fxn).balanceOf(address(this));
         uint256 sendAmount = fxnBalance * totalFees / FEE_DENOMINATOR;
         if(sendAmount > 0){
-            //get deposit address for given proxy (address 0 will be handled by fee registry)
+            //get deposit address for given proxy (address 0 will be handled by fee registry to return default convex proxy)
             IERC20(fxn).transfer(IFeeRegistry(feeRegistry).getFeeDepositor(usingProxy), sendAmount);
         }
 
@@ -164,9 +174,10 @@ contract StakingProxyBase is IProxyVault{
         }
     }
 
-    //get extra rewards
+    //get extra rewards (convex side)
     function _processExtraRewards() internal{
         if(IRewards(rewards).active()){
+            //update if first call since activation:
             //check if there is a balance because the reward contract could have be activated later
             //dont use _checkpointRewards since difference of 0 will still call deposit() and cost gas
             uint256 bal = IRewards(rewards).balanceOf(address(this));
@@ -175,11 +186,14 @@ contract StakingProxyBase is IProxyVault{
                 //bal == 0 and liq > 0 can only happen if rewards were turned on after staking
                 IRewards(rewards).deposit(owner,userLiq);
             }
+
+            //get the rewards
             IRewards(rewards).getReward(owner);
         }
     }
 
     //transfer other reward tokens besides fxn(which needs to have fees applied)
+    //also block gauge tokens from being transfered out
     function _transferTokens(address[] memory _tokens) internal{
         //transfer all tokens
         for(uint256 i = 0; i < _tokens.length; i++){
@@ -202,9 +216,10 @@ contract StakingProxyBase is IProxyVault{
         address _to,
         bytes memory _data
     ) external onlyOwner returns (bool, bytes memory) {
+        //fully block fxn, staking token(lp etc), and rewards
         require(_to != fxn && _to != stakingToken && _to != rewards, "!invalid target");
 
-        //only allow certain calls to staking address
+        //only allow certain calls to staking(gauge) address
         if(_to == gaugeAddress){
             (, , , , uint8 shutdown) = IPoolRegistry(poolRegistry).poolInfo(pid);
             require(shutdown == 0,"!shutdown");

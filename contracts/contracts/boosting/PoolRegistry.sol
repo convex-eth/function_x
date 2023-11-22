@@ -4,9 +4,19 @@ pragma solidity 0.8.10;
 import "../interfaces/IProxyFactory.sol";
 import "../interfaces/IRewards.sol";
 
+/*
+Pool Registry
+
+Holds list of all pool information and user vault information.
+Clones new vaults for users
+Clones reward contracts for pools
+
+*/
 contract PoolRegistry {
 
+    //owner is the voteproxy contract holding vefxn
     address public constant owner = address(0xd11a4Ee017cA0BECA8FA45fF2abFe9C6267b7881);
+    //minimal proxy factory
     address public constant proxyFactory = address(0x66807B5598A848602734B82E432dD88DBE13fC8f);
 
     address public operator;
@@ -17,11 +27,11 @@ contract PoolRegistry {
     mapping(uint256 => address[]) public poolVaultList; //pool -> vault array
     
     struct PoolInfo {
-        address implementation;
-        address stakingAddress;
-        address stakingToken;
-        address rewardsAddress;
-        uint8 active;
+        address implementation; //vault implementation
+        address stakingAddress; //staking address, aka gauge
+        address stakingToken; //the staking token, ex. a curve lp token
+        address rewardsAddress; //address for extra rewards contract for convex rewards
+        uint8 active; //pool is active or not
     }
 
     event PoolCreated(uint256 indexed poolid, address indexed implementation, address stakingAddress, address stakingToken);
@@ -77,12 +87,14 @@ contract PoolRegistry {
         require(_stakingAddress != address(0), "!stkAdd");
         require(_stakingToken != address(0), "!stkTok");
 
+        //create and initialize rewards if available
         address rewards;
         if(rewardImplementation != address(0)){
            rewards = IProxyFactory(proxyFactory).clone(rewardImplementation);
            IRewards(rewards).initialize(poolInfo.length, rewardsStartActive);
         }
 
+        //add to pool list
         poolInfo.push(
             PoolInfo({
                 implementation: _implementation,
@@ -96,7 +108,7 @@ contract PoolRegistry {
     }
 
     //replace rewards contract on a specific pool.
-    //each user must call changeRewards on vault to update to new contract
+    //each user must call an updater to have changeRewards called on each user vault to update to the new contract
     function createNewPoolRewards(uint256 _pid) external onlyOperator{
         require(rewardImplementation != address(0), "!imp");
 

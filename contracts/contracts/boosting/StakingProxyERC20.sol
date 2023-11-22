@@ -5,7 +5,9 @@ import "./StakingProxyBase.sol";
 import "../interfaces/IFxnGauge.sol";
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 
-
+/*
+Vault implementation for basic erc20 tokens
+*/
 contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
     using SafeERC20 for IERC20;
 
@@ -13,10 +15,12 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
         StakingProxyBase(_poolRegistry, _feeRegistry, _fxnminter){
     }
 
+    //vault type
     function vaultType() external pure override returns(VaultType){
         return VaultType.Erc20Basic;
     }
 
+    //vault version
     function vaultVersion() external pure override returns(uint256){
         return 1;
     }
@@ -30,7 +34,7 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
     }
 
 
-    //create a new locked state of _secs timelength
+    //deposit into gauge
     function deposit(uint256 _amount) external onlyOwner nonReentrant{
         if(_amount > 0){
             //pull tokens from user
@@ -48,22 +52,24 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
     //withdraw a staked position
     function withdraw(uint256 _amount) external onlyOwner nonReentrant{
 
-        //withdraw directly to owner(msg.sender)
+        //withdraw to vault
         IFxnGauge(gaugeAddress).withdraw(_amount);
 
         //checkpoint rewards
         _checkpointRewards();
 
-        //send back to owner
-        IERC20(stakingToken).safeTransfer(msg.sender, _amount);
+        //send back to owner any staking tokens on the vault (may differ from _amount)
+        IERC20(stakingToken).safeTransfer(msg.sender, IERC20(stakingToken).balanceOf(address(this)));
     }
 
 
-    //helper function to combine earned tokens on staking contract and any tokens that are on this vault
+    //return earned tokens on staking contract and any tokens that are on this vault
     function earned() external override returns (address[] memory token_addresses, uint256[] memory total_earned) {
         //get list of reward tokens
         address[] memory rewardTokens = IFxnGauge(gaugeAddress).getActiveRewardTokens();
         uint256[] memory previousBalance = new uint256[](rewardTokens.length);
+
+        //create array of rewards on gauge, rewards on extra reward contract, and fxn that is minted
         token_addresses = new address[](rewardTokens.length + IRewards(rewards).rewardTokenLength() + 1);// +1 for fxn
         total_earned = new uint256[](rewardTokens.length + IRewards(rewards).rewardTokenLength() + 1); // +1 for fxn
 
@@ -74,11 +80,12 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
         }
         
         //simulate claiming
-        IFxnTokenMinter(fxnMinter).mint(gaugeAddress);
-        IFxnGauge(gaugeAddress).claim();
+        IFxnTokenMinter(fxnMinter).mint(gaugeAddress); //mint fxn
+        IFxnGauge(gaugeAddress).claim(); //claim other rewards on gauge
 
         //check fxn
         token_addresses[0] = fxn;
+        //remove fee
         total_earned[0] = IERC20(fxn).balanceOf(address(this)) * (FEE_DENOMINATOR - IFeeRegistry(feeRegistry).totalFees()) / FEE_DENOMINATOR;
 
         //get difference as total earned

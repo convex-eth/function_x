@@ -24,12 +24,13 @@ contract PoolUtilities{
         return _rate * 365 days * _priceOfReward / _priceOfDeposit; 
     }
 
+    //get rates of each token per deposit for the specified pool id
     function poolRewardRatesById(uint256 _pid) external view returns (address[] memory tokens, uint256[] memory rates) {
         (,address _gaugeAddress, , ,) = IPoolRegistry(poolRegistry).poolInfo(_pid);
         return poolRewardRates(_gaugeAddress);
     }
 
-    //get rates of each token per deposit into the specified gauge
+    //get rates of each token per deposit for the specified gauge
     function poolRewardRates(address _gauge) public view returns (address[] memory tokens, uint256[] memory rates) {
         //get token emission rates and gauge weighting
         uint256 emissionRate = IFxnToken(fxn).rate();

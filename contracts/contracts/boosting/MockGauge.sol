@@ -6,6 +6,9 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
 
+/*
+This is a mock gauge for testing purposes that mimics function calls of real gauges.
+*/
 contract MockGauge is ERC20{
     using SafeERC20 for IERC20;
 
@@ -30,13 +33,16 @@ contract MockGauge is ERC20{
     function workingSupply() external view returns(uint256){
         return totalSupply();
     }
+
     function workingBalanceOf(address _account) external view returns(uint256){
         return balanceOf(_account);
     }
+
     function user_checkpoint(address _account) external returns(bool){
         mintRewards[_account] += 1e18;
         return true;
     }
+    
     function integrate_fraction(address _account) external view returns (uint256){
         return mintRewards[_account];
     }
