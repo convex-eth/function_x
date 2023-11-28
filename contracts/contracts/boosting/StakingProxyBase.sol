@@ -76,37 +76,6 @@ contract StakingProxyBase is IProxyVault{
         IFxnGauge(gaugeAddress).setRewardReceiver(owner);
     }
 
-    //change convex side extra reward contract
-    function changeRewards(address _rewardsAddress) external onlyAdmin{
-        
-        //remove from old rewards and claim
-        if(IRewards(rewards).active()){
-            uint256 bal = IRewards(rewards).balanceOf(address(this));
-            if(bal > 0){
-                IRewards(rewards).withdraw(owner, bal);
-            }
-            IRewards(rewards).getReward(owner);
-        }
-
-        //set to new rewards
-        rewards = _rewardsAddress;
-
-        //update balance in the reward contract
-        _checkpointRewards();
-    }
-
-    //checkpoint weight on gauge
-    function checkpointRewards() external onlyAdmin{
-        //checkpoint the gauge
-        _checkpointGauge();
-    }
-
-    //checkpoint weight on gauge
-    function _checkpointGauge() internal{
-        //check point
-        IFxnGauge(gaugeAddress).user_checkpoint(address(this));
-    }
-
     //set what veFXN proxy this vault is using
     function setVeFXNProxy(address _proxy) external virtual onlyAdmin{
         //set the vefxn proxy
@@ -138,8 +107,8 @@ contract StakingProxyBase is IProxyVault{
     //checkpoint and add/remove weight to convex rewards contract
     function _checkpointRewards() internal{
         //if rewards are active, checkpoint
-        if(IRewards(rewards).active()){
-            //using liquidity shares from staking contract will handle rebasing tokens correctly
+        if(IRewards(rewards).rewardState() == IRewards.RewardState.Active){
+            //get user balance from the gauge
             uint256 userLiq = IFxnGauge(gaugeAddress).balanceOf(address(this));
             //get current balance of reward contract
             uint256 bal = IRewards(rewards).balanceOf(address(this));
@@ -176,15 +145,16 @@ contract StakingProxyBase is IProxyVault{
 
     //get extra rewards (convex side)
     function _processExtraRewards() internal{
-        if(IRewards(rewards).active()){
-            //update if first call since activation:
-            //check if there is a balance because the reward contract could have be activated later
-            //dont use _checkpointRewards since difference of 0 will still call deposit() and cost gas
+        if(IRewards(rewards).rewardState() == IRewards.RewardState.Active){
+            //update reward balance if this is the first call since reward contract activation:
+            //check if no balance recorded yet and set staked balance
+            //dont use _checkpointRewards since difference of 0 will still call deposit()
+            //as well as it will check rewardState twice
             uint256 bal = IRewards(rewards).balanceOf(address(this));
-            uint256 userLiq = IFxnGauge(gaugeAddress).balanceOf(address(this));
-            if(bal == 0 && userLiq > 0){
-                //bal == 0 and liq > 0 can only happen if rewards were turned on after staking
-                IRewards(rewards).deposit(owner,userLiq);
+            uint256 gaugeBalance = IFxnGauge(gaugeAddress).balanceOf(address(this));
+            if(bal == 0 && gaugeBalance > 0){
+                //set balance to gauge.balanceof(this)
+                IRewards(rewards).deposit(owner,gaugeBalance);
             }
 
             //get the rewards

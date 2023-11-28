@@ -59,8 +59,8 @@ contract MultiRewards is IRewards{
  
     address public immutable poolRegistry;
     uint256 public poolId;
-    bool public active;
-    bool public init;
+    RewardState public rewardState;
+    
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -69,22 +69,23 @@ contract MultiRewards is IRewards{
     }
 
     function initialize(uint256 _pid, bool _startActive) external{
-        require(!init,"already init");
+        require(rewardState > RewardState.NotInitialized,"already init");
 
         //set variables
         poolId = _pid;
         if(_startActive){
-            active = true;
+            rewardState = RewardState.Active;
             emit Activate();
+        }else{
+            rewardState = RewardState.NoRewards;
         }
-        init = true;
     }
 
     /* ========== ADMIN CONFIGURATION ========== */
 
     //turn on rewards contract - vault can save gas if not in use
     function setActive() external onlyOwner{
-        active = true;
+        rewardState = RewardState.Active;
         emit Activate();
     }
 
@@ -93,7 +94,7 @@ contract MultiRewards is IRewards{
         address _rewardsToken,
         address _distributor
     ) public onlyOwner {
-        require(active, "!active");
+        require(rewardState == RewardState.Active, "!active");
         require(rewardData[_rewardsToken].lastUpdateTime == 0);
 
         rewardTokens.push(_rewardsToken);
@@ -145,11 +146,6 @@ contract MultiRewards is IRewards{
         balances[msg.sender] -= _amount;
         totalSupply -= _amount;
         emit Withdrawn(msg.sender, _amount);
-
-        if(rewardHook != address(0)){
-            try IRewardHook(rewardHook).onRewardClaim(IRewardHook.HookType.Withdraw, poolId){
-            }catch{}
-        }
     }
 
 
@@ -249,7 +245,7 @@ contract MultiRewards is IRewards{
 
     function notifyRewardAmount(address _rewardsToken, uint256 _reward) external updateReward(address(0)) {
         require(rewardDistributors[_rewardsToken][msg.sender]);
-        require(_reward > 0, "No reward");
+        require(_reward > 0 && _reward < 1e30, "bad reward value");
 
         _notifyReward(_rewardsToken, _reward);
 

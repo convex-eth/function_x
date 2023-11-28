@@ -107,19 +107,6 @@ contract PoolRegistry {
         emit PoolCreated(poolInfo.length-1, _implementation, _stakingAddress, _stakingToken);
     }
 
-    //replace rewards contract on a specific pool.
-    //each user must call an updater to have changeRewards called on each user vault to update to the new contract
-    function createNewPoolRewards(uint256 _pid) external onlyOperator{
-        require(rewardImplementation != address(0), "!imp");
-
-        //spawn new clone
-        address rewards = IProxyFactory(proxyFactory).clone(rewardImplementation);
-        IRewards(rewards).initialize(_pid, rewardsStartActive);
-
-        //change address
-        poolInfo[_pid].rewardsAddress = rewards;
-    }
-
     //deactivates pool so that new vaults can not be made.
     //can not force shutdown/withdraw user funds
     function deactivatePool(uint256 _pid) external onlyOperator{
