@@ -15,9 +15,6 @@ import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 Multi-token reward contract
 
 Add additional rewards to pools on convex side.
-
-Trust assumptions: Only official vaults can call and assumed their implementation on setting balances is correct.
-Since new pools and new vault implementations can be made, this means it is possible to create a pool with a specialized vault to manipulate weighting.
 */
 contract MultiRewards is IRewards{
     using SafeERC20 for IERC20;

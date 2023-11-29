@@ -39,4 +39,7 @@ Users can claim rewards as they see fit.  Any FXN tokens claimed will have a fee
 
 ## Design Decisions
 
-TODO
+- User funds are controlled soley by user owned "vaults". Admin never has access to funds.
+- Vault functions that admin does keep control of relates to boost (set what vefxn proxy a vault uses) and fees.
+- There are hard coded upper limits to fees.
+- Creating a vault requires an extra transaction to begin. Why vaults? Funds are never co-mingled with other users. Rewards are directly linked to the vault so no trailing reward structure or harvesting is required.  Allow users to execute arbitrary functions within limits (example: claim an airdrop).  

@@ -86,13 +86,11 @@ contract PoolRegistry {
         require(_implementation != address(0), "!imp");
         require(_stakingAddress != address(0), "!stkAdd");
         require(_stakingToken != address(0), "!stkTok");
+        require(rewardImplementation != address(0), "!rewardImplementation");
 
         //create and initialize rewards if available
-        address rewards;
-        if(rewardImplementation != address(0)){
-           rewards = IProxyFactory(proxyFactory).clone(rewardImplementation);
-           IRewards(rewards).initialize(poolInfo.length, rewardsStartActive);
-        }
+        address rewards = IProxyFactory(proxyFactory).clone(rewardImplementation);
+        IRewards(rewards).initialize(poolInfo.length, rewardsStartActive);
 
         //add to pool list
         poolInfo.push(
