@@ -66,7 +66,7 @@ contract MultiRewards is IRewards{
     }
 
     function initialize(uint256 _pid, bool _startActive) external{
-        require(rewardState > RewardState.NotInitialized,"already init");
+        require(rewardState == RewardState.NotInitialized,"already init");
 
         //set variables
         poolId = _pid;

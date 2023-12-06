@@ -242,7 +242,7 @@ contract("staking platform", async accounts => {
     
     var poolrewards = await MultiRewards.at(await vault.rewards());
     console.log("extra rewards at: " +poolrewards.address)
-    await poolrewards.active().then(a=>console.log("is active? " +a));
+    await poolrewards.rewardState().then(a=>console.log("reward state? " +a));
 
     await lptoken.approve(vault.address, web3.utils.toWei("1000000000.0","ether"),{from:actingUser});
     console.log("approved");
