@@ -63,7 +63,7 @@ contract FeeReceiverCvxFxn is IFeeReceiver {
         }
 
         //process reward token
-        if(rewardAddress != address(0)){
+        if(rewardToken != address(0)){
             tokenbalance = IERC20(rewardToken).balanceOf(address(this));
            
             if(tokenbalance > 0){
