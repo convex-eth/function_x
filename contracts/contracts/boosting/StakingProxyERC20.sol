@@ -135,8 +135,7 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
         _processExtraRewards();
     }
 
-    //auxiliary function to supply token list to sweep while claiming
-    //can also be used to rescue tokens on the vault
+    //get reward with claim option, as well as a specific token list to claim from convex extra rewards
     function getReward(bool _claim, address[] calldata _tokenList) external override{
 
         //claim
@@ -151,11 +150,15 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
         //process fxn fees
         _processFxn();
 
-        //transfer
-        _transferTokens(_tokenList);
-
         //extra rewards
-        _processExtraRewards();
+        _processExtraRewardsFilter(_tokenList);
+    }
+
+    //return any tokens in vault back to owner
+    function transferTokens(address[] calldata _tokenList) external onlyOwner{
+        //transfer tokens back to owner
+        //fxn and gauge tokens are skipped
+        _transferTokens(_tokenList);
     }
 
 }

@@ -22,6 +22,7 @@ interface IRewards{
     function deposit(address _owner, uint256 _amount) external;
     function withdraw(address _owner, uint256 _amount) external;
     function getReward(address _forward) external;
+    function getRewardFilter(address _forward, address[] calldata _tokens) external;
     function notifyRewardAmount(address _rewardsToken, uint256 _reward) external;
     function balanceOf(address account) external view returns (uint256);
     function claimableRewards(address _account) external view returns(EarnedData[] memory userRewards);

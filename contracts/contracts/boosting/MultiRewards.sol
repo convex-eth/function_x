@@ -220,6 +220,23 @@ contract MultiRewards is IRewards{
         }
     }
 
+    function getRewardFilter(address _forward, address[] calldata _tokens) public updateReward(msg.sender) {
+        for (uint i; i < _tokens.length; i++) {
+            address _rewardsToken = _tokens[i];
+            uint256 reward = rewards[msg.sender][_rewardsToken];
+            if (reward > 0) {
+                rewards[msg.sender][_rewardsToken] = 0;
+                IERC20(_rewardsToken).safeTransfer(_forward, reward);
+                emit RewardPaid(msg.sender, _rewardsToken, reward);
+            }
+        }
+        address hook = rewardHook;
+        if(hook != address(0)){
+            try IRewardHook(hook).onRewardClaim(IRewardHook.HookType.RewardClaim, poolId){
+            }catch{}
+        }
+    }
+
 
     /* ========== RESTRICTED FUNCTIONS ========== */
 

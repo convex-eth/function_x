@@ -161,9 +161,29 @@ contract StakingProxyBase is IProxyVault{
         }
     }
 
+    //get extra rewards (convex side) with a filter list
+    function _processExtraRewardsFilter(address[] calldata _tokens) internal{
+        address _rewards = rewards;
+        if(IRewards(_rewards).rewardState() == IRewards.RewardState.Active){
+            //update reward balance if this is the first call since reward contract activation:
+            //check if no balance recorded yet and set staked balance
+            //dont use _checkpointRewards since difference of 0 will still call deposit()
+            //as well as it will check rewardState twice
+            uint256 bal = IRewards(_rewards).balanceOf(address(this));
+            uint256 gaugeBalance = IFxnGauge(gaugeAddress).balanceOf(address(this));
+            if(bal == 0 && gaugeBalance > 0){
+                //set balance to gauge.balanceof(this)
+                IRewards(_rewards).deposit(owner,gaugeBalance);
+            }
+
+            //get the rewards
+            IRewards(_rewards).getRewardFilter(owner,_tokens);
+        }
+    }
+
     //transfer other reward tokens besides fxn(which needs to have fees applied)
     //also block gauge tokens from being transfered out
-    function _transferTokens(address[] memory _tokens) internal{
+    function _transferTokens(address[] calldata _tokens) internal{
         //transfer all tokens
         for(uint256 i = 0; i < _tokens.length; i++){
             //dont allow fxn (need to take fee)
@@ -176,9 +196,6 @@ contract StakingProxyBase is IProxyVault{
             }
         }
     }
-
-
-
 
     //allow arbitrary calls. some function signatures and targets are blocked
     function execute(
