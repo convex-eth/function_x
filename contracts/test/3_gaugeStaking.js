@@ -233,12 +233,16 @@ contract("staking platform", async accounts => {
 
     //create vault
     var tx = await booster.createVault(poolid,{from:actingUser});
-    console.log("created vault");
+    console.log("created vault: gas = " +tx.receipt.gasUsed);
     
     //get vault
     let vaultAddress = await poolReg.vaultMap(poolid,actingUser);
     let vault = await StakingProxyERC20.at(vaultAddress)
     console.log("vault at " +vault.address);// +", gas: " +tx.receipt.gasUsed);
+
+    await vault.gaugeAddress().then(a=>console.log("vault.gaugeAddress() " +a))
+    await vault.stakingToken().then(a=>console.log("vault.stakingToken() " +a))
+    await vault.rewards().then(a=>console.log("vault.rewards() " +a))
     
     var poolrewards = await MultiRewards.at(await vault.rewards());
     console.log("extra rewards at: " +poolrewards.address)

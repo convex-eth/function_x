@@ -129,8 +129,9 @@ contract MultiRewards is IRewards{
         totalSupply += _amount;
         emit Deposited(msg.sender, _amount);
 
-        if(rewardHook != address(0)){
-            try IRewardHook(rewardHook).onRewardClaim(IRewardHook.HookType.Deposit, poolId){
+        address hook = rewardHook;
+        if(hook != address(0)){
+            try IRewardHook(hook).onRewardClaim(IRewardHook.HookType.Deposit, poolId){
             }catch{}
         }
     }
@@ -212,8 +213,9 @@ contract MultiRewards is IRewards{
                 emit RewardPaid(msg.sender, _rewardsToken, reward);
             }
         }
-        if(rewardHook != address(0)){
-            try IRewardHook(rewardHook).onRewardClaim(IRewardHook.HookType.RewardClaim, poolId){
+        address hook = rewardHook;
+        if(hook != address(0)){
+            try IRewardHook(hook).onRewardClaim(IRewardHook.HookType.RewardClaim, poolId){
             }catch{}
         }
     }

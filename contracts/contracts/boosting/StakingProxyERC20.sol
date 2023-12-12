@@ -38,10 +38,11 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
     function deposit(uint256 _amount) external onlyOwner nonReentrant{
         if(_amount > 0){
             //pull tokens from user
-            IERC20(stakingToken).safeTransferFrom(msg.sender, address(this), _amount);
+            address _stakingToken = stakingToken;
+            IERC20(_stakingToken).safeTransferFrom(msg.sender, address(this), _amount);
 
             //stake (use balanceof in case of change during transfer)
-            IFxnGauge(gaugeAddress).deposit(IERC20(stakingToken).balanceOf(address(this)));
+            IFxnGauge(gaugeAddress).deposit(IERC20(_stakingToken).balanceOf(address(this)));
         }
         
         //checkpoint rewards
@@ -59,7 +60,8 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
         _checkpointRewards();
 
         //send back to owner any staking tokens on the vault (may differ from _amount)
-        IERC20(stakingToken).safeTransfer(msg.sender, IERC20(stakingToken).balanceOf(address(this)));
+        address _stakingToken = stakingToken;
+        IERC20(_stakingToken).safeTransfer(msg.sender, IERC20(_stakingToken).balanceOf(address(this)));
     }
 
 
@@ -70,8 +72,9 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
         uint256[] memory previousBalance = new uint256[](rewardTokens.length);
 
         //create array of rewards on gauge, rewards on extra reward contract, and fxn that is minted
-        token_addresses = new address[](rewardTokens.length + IRewards(rewards).rewardTokenLength() + 1);// +1 for fxn
-        total_earned = new uint256[](rewardTokens.length + IRewards(rewards).rewardTokenLength() + 1); // +1 for fxn
+        address _rewards = rewards;
+        token_addresses = new address[](rewardTokens.length + IRewards(_rewards).rewardTokenLength() + 1);// +1 for fxn
+        total_earned = new uint256[](rewardTokens.length + IRewards(_rewards).rewardTokenLength() + 1); // +1 for fxn
 
 
         //get previous balances of extra tokens on owner
@@ -95,7 +98,7 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
         }
 
         //also add an extra rewards from convex's side
-        IRewards.EarnedData[] memory extraRewards = IRewards(rewards).claimableRewards(address(this));
+        IRewards.EarnedData[] memory extraRewards = IRewards(_rewards).claimableRewards(address(this));
         for(uint256 i = 0; i < extraRewards.length; i++){
             token_addresses[i+rewardTokens.length+1] = extraRewards[i].token;
             total_earned[i+rewardTokens.length+1] = extraRewards[i].amount;

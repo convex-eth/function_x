@@ -65,15 +65,12 @@ contract StakingProxyBase is IProxyVault{
         pid = _pid;
 
         //get pool info
-        (,address _gaugeAddress, address _stakingToken, address _convexRewards,) = IPoolRegistry(poolRegistry).poolInfo(_pid);
-        gaugeAddress = _gaugeAddress;
-        stakingToken = _stakingToken;
-        rewards = _convexRewards;
+        (,gaugeAddress, stakingToken, rewards,) = IPoolRegistry(poolRegistry).poolInfo(_pid);
 
         //set extra rewards to send directly back to owner
         //..could technically save gas on initialize() by using claim(address,address) but
         //since claim is unguarded would be better UX to set receiver in case called by some other address
-        IFxnGauge(gaugeAddress).setRewardReceiver(owner);
+        IFxnGauge(gaugeAddress).setRewardReceiver(_owner);
     }
 
     //set what veFXN proxy this vault is using
@@ -107,17 +104,18 @@ contract StakingProxyBase is IProxyVault{
     //checkpoint and add/remove weight to convex rewards contract
     function _checkpointRewards() internal{
         //if rewards are active, checkpoint
-        if(IRewards(rewards).rewardState() == IRewards.RewardState.Active){
+        address _rewards = rewards;
+        if(IRewards(_rewards).rewardState() == IRewards.RewardState.Active){
             //get user balance from the gauge
             uint256 userLiq = IFxnGauge(gaugeAddress).balanceOf(address(this));
             //get current balance of reward contract
-            uint256 bal = IRewards(rewards).balanceOf(address(this));
+            uint256 bal = IRewards(_rewards).balanceOf(address(this));
             if(userLiq >= bal){
                 //add the difference to reward contract
-                IRewards(rewards).deposit(owner, userLiq - bal);
+                IRewards(_rewards).deposit(owner, userLiq - bal);
             }else{
                 //remove the difference from the reward contract
-                IRewards(rewards).withdraw(owner, bal - userLiq);
+                IRewards(_rewards).withdraw(owner, bal - userLiq);
             }
         }
     }
@@ -145,20 +143,21 @@ contract StakingProxyBase is IProxyVault{
 
     //get extra rewards (convex side)
     function _processExtraRewards() internal{
-        if(IRewards(rewards).rewardState() == IRewards.RewardState.Active){
+        address _rewards = rewards;
+        if(IRewards(_rewards).rewardState() == IRewards.RewardState.Active){
             //update reward balance if this is the first call since reward contract activation:
             //check if no balance recorded yet and set staked balance
             //dont use _checkpointRewards since difference of 0 will still call deposit()
             //as well as it will check rewardState twice
-            uint256 bal = IRewards(rewards).balanceOf(address(this));
+            uint256 bal = IRewards(_rewards).balanceOf(address(this));
             uint256 gaugeBalance = IFxnGauge(gaugeAddress).balanceOf(address(this));
             if(bal == 0 && gaugeBalance > 0){
                 //set balance to gauge.balanceof(this)
-                IRewards(rewards).deposit(owner,gaugeBalance);
+                IRewards(_rewards).deposit(owner,gaugeBalance);
             }
 
             //get the rewards
-            IRewards(rewards).getReward(owner);
+            IRewards(_rewards).getReward(owner);
         }
     }
 
