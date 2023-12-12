@@ -205,21 +205,10 @@ contract StakingProxyBase is IProxyVault{
         //fully block fxn, staking token(lp etc), and rewards
         require(_to != fxn && _to != stakingToken && _to != rewards, "!invalid target");
 
-        //only allow certain calls to staking(gauge) address
+        //only calls to staking(gauge) address if pool is shutdown
         if(_to == gaugeAddress){
             (, , , , uint8 shutdown) = IPoolRegistry(poolRegistry).poolInfo(pid);
             require(shutdown == 0,"!shutdown");
-
-            // bytes4 sig;
-            // assembly {
-            //     sig := mload(add(_data, 32))
-            // }
-
-            // require(
-            //     sig != ISomeInterface.someMethod.selector &&  //seal
-            //     sig != ISomeInterface.someMethodB.selector, //seal
-            //     "!allowed"
-            // );
         }
 
         (bool success, bytes memory result) = _to.call{value:0}(_data);
