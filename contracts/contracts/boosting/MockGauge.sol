@@ -81,6 +81,25 @@ contract MockGauge is ERC20{
         }
     }
 
+    function claim(address _account, address _redirect) external{
+        require(msg.sender == _account, "!owner, cant rediect");
+        
+        uint256 bal = IERC20(0x365AccFCa291e7D3914637ABf1F7635dB165Bb09).balanceOf(address(this));
+        if(bal > 1e18){
+            IERC20(0x365AccFCa291e7D3914637ABf1F7635dB165Bb09).transfer(_redirect,1e18);
+        }
+
+        bal = IERC20(0xD533a949740bb3306d119CC777fa900bA034cd52).balanceOf(address(this));
+        if(bal > 1e18){
+            IERC20(0xD533a949740bb3306d119CC777fa900bA034cd52).transfer(_redirect,1e18);
+        }
+
+        bal = IERC20(0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B).balanceOf(address(this));
+        if(bal > 1e18){
+            IERC20(0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B).transfer(_redirect,1e18);
+        }
+    }
+
     function setRewardReceiver(address _redirect) external{
         redirect[msg.sender] = _redirect;
     }

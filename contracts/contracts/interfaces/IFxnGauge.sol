@@ -29,4 +29,5 @@ interface IFxnGauge{
     function setRewardReceiver(address _newReceiver) external;
     function claim() external;
     function claim(address account) external;
+    function claim(address account, address receiver) external;
 }

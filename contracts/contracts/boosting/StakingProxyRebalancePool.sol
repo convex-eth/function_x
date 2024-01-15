@@ -6,9 +6,13 @@ import "../interfaces/IFxnGauge.sol";
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 
 /*
-Vault implementation for basic erc20 tokens
+Vault implementation for rebalance pool gauges
+
+This should mostly act like a normal erc20 vault with the exception that
+fxn is not minted directly and is rather passed in via the extra rewards route.
+Thus automatic redirect must be turned off and processed locally from the vault.
 */
-contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
+contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
     using SafeERC20 for IERC20;
 
     constructor(address _poolRegistry, address _feeRegistry, address _fxnminter) 
@@ -31,11 +35,6 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
 
         //set infinite approval
         IERC20(stakingToken).approve(gaugeAddress, type(uint256).max);
-
-        //set extra rewards to send directly back to owner
-        //..could technically save gas on initialize() by using claim(address,address) but
-        //since claim is unguarded would be better UX to set receiver in case called by some other address
-        IFxnGauge(gaugeAddress).setRewardReceiver(_owner);
     }
 
 
@@ -77,38 +76,30 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
 
         //create array of rewards on gauge, rewards on extra reward contract, and fxn that is minted
         address _rewards = rewards;
-        token_addresses = new address[](rewardTokens.length + IRewards(_rewards).rewardTokenLength() + 1);// +1 for fxn
-        total_earned = new uint256[](rewardTokens.length + IRewards(_rewards).rewardTokenLength() + 1); // +1 for fxn
+        token_addresses = new address[](rewardTokens.length + IRewards(_rewards).rewardTokenLength());
+        total_earned = new uint256[](rewardTokens.length + IRewards(_rewards).rewardTokenLength());
 
         //simulate claiming
-
-        //mint fxn
-        try IFxnTokenMinter(fxnMinter).mint(gaugeAddress){}catch{}
-        
-        //check fxn
-        token_addresses[0] = fxn;
-        //remove fee (assumes all fxn on vault came from minting)
-        total_earned[0] = IERC20(fxn).balanceOf(address(this)) * (FEE_DENOMINATOR - IFeeRegistry(feeRegistry).totalFees()) / FEE_DENOMINATOR;
 
         //claim other rewards on gauge to this address to tally
         IFxnGauge(gaugeAddress).claim(address(this),address(this));
 
         //get balance of tokens
         for(uint256 i = 0; i < rewardTokens.length; i++){
-            token_addresses[i+1] = rewardTokens[i];
+            token_addresses[i] = rewardTokens[i];
             if(rewardTokens[i] == fxn){
-                //if more fxn was distributed as an extra reward, add difference of current-minted
-                total_earned[i+1] = IERC20(rewardTokens[i]).balanceOf(address(this)) - total_earned[0];
+                //remove boost fee here as boosted fxn is distributed via extra rewards
+                total_earned[i] = IERC20(fxn).balanceOf(address(this)) * (FEE_DENOMINATOR - IFeeRegistry(feeRegistry).totalFees()) / FEE_DENOMINATOR;
             }else{
-                total_earned[i+1] = IERC20(rewardTokens[i]).balanceOf(address(this));
+                total_earned[i] = IERC20(rewardTokens[i]).balanceOf(address(this));
             }
         }
 
         //also add an extra rewards from convex's side
         IRewards.EarnedData[] memory extraRewards = IRewards(_rewards).claimableRewards(address(this));
         for(uint256 i = 0; i < extraRewards.length; i++){
-            token_addresses[i+rewardTokens.length+1] = extraRewards[i].token;
-            total_earned[i+rewardTokens.length+1] = extraRewards[i].amount;
+            token_addresses[i+rewardTokens.length] = extraRewards[i].token;
+            total_earned[i+rewardTokens.length] = extraRewards[i].amount;
         }
     }
 
@@ -138,6 +129,12 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
         //process fxn fees
         _processFxn();
 
+        //get list of reward tokens
+        address[] memory rewardTokens = IFxnGauge(gaugeAddress).getActiveRewardTokens();
+
+        //transfer remaining tokens
+        _transferTokens(rewardTokens);
+
         //extra rewards
         _processExtraRewards();
     }
@@ -156,6 +153,12 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
 
         //process fxn fees
         _processFxn();
+
+        //get list of reward tokens
+        address[] memory rewardTokens = IFxnGauge(gaugeAddress).getActiveRewardTokens();
+
+        //transfer remaining tokens
+        _transferTokens(rewardTokens);
 
         //extra rewards
         _processExtraRewardsFilter(_tokenList);

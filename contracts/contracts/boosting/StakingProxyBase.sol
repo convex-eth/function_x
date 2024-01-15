@@ -66,11 +66,6 @@ contract StakingProxyBase is IProxyVault{
 
         //get pool info
         (,gaugeAddress, stakingToken, rewards,) = IPoolRegistry(poolRegistry).poolInfo(_pid);
-
-        //set extra rewards to send directly back to owner
-        //..could technically save gas on initialize() by using claim(address,address) but
-        //since claim is unguarded would be better UX to set receiver in case called by some other address
-        IFxnGauge(gaugeAddress).setRewardReceiver(_owner);
     }
 
     //set what veFXN proxy this vault is using
@@ -183,7 +178,7 @@ contract StakingProxyBase is IProxyVault{
 
     //transfer other reward tokens besides fxn(which needs to have fees applied)
     //also block gauge tokens from being transfered out
-    function _transferTokens(address[] calldata _tokens) internal{
+    function _transferTokens(address[] memory _tokens) internal{
         //transfer all tokens
         for(uint256 i = 0; i < _tokens.length; i++){
             //dont allow fxn (need to take fee)

@@ -4,7 +4,8 @@ pragma solidity 0.8.10;
 interface IProxyVault {
 
     enum VaultType{
-        Erc20Basic
+        Erc20Basic,
+        RebalancePool
     }
 
     function initialize(address _owner, uint256 _pid) external;
