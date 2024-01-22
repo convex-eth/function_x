@@ -8,6 +8,8 @@ interface IProxyVault {
         RebalancePool
     }
 
+    function vaultType() external view returns(VaultType);
+    function vaultVersion() external view returns(uint256);
     function initialize(address _owner, uint256 _pid) external;
     function pid() external returns(uint256);
     function usingProxy() external returns(address);

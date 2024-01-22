@@ -9,7 +9,9 @@ interface IFxnGauge{
     function workingSupply() external view returns(uint256);
     function workingBalanceOf(address _account) external view returns(uint256);
     function deposit(uint256 _amount) external;
+    function deposit(uint256 _amount, address _receiver) external;
     function withdraw(uint256 _amount) external;
+    function withdraw(uint256 _amount, address _receiver) external;
     function user_checkpoint(address _account) external returns (bool);
     function balanceOf(address _account) external view returns(uint256);
     function integrate_fraction(address account) external view returns (uint256);
@@ -30,4 +32,5 @@ interface IFxnGauge{
     function claim() external;
     function claim(address account) external;
     function claim(address account, address receiver) external;
+    function getBoostRatio(address _account) external view returns (uint256);
 }

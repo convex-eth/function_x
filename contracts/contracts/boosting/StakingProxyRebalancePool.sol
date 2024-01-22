@@ -21,7 +21,7 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
 
     //vault type
     function vaultType() external pure override returns(VaultType){
-        return VaultType.Erc20Basic;
+        return VaultType.RebalancePool;
     }
 
     //vault version
@@ -46,7 +46,7 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
             IERC20(_stakingToken).safeTransferFrom(msg.sender, address(this), _amount);
 
             //stake (use balanceof in case of change during transfer)
-            IFxnGauge(gaugeAddress).deposit(IERC20(_stakingToken).balanceOf(address(this)));
+            IFxnGauge(gaugeAddress).deposit(_amount, address(this));
         }
         
         //checkpoint rewards
@@ -58,7 +58,7 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
     function withdraw(uint256 _amount) external onlyOwner nonReentrant{
 
         //withdraw to vault
-        IFxnGauge(gaugeAddress).withdraw(_amount);
+        IFxnGauge(gaugeAddress).withdraw(_amount, owner);
 
         //checkpoint rewards
         _checkpointRewards();

@@ -5,6 +5,7 @@ import "../interfaces/IFxnToken.sol";
 import "../interfaces/IFxnGauge.sol";
 import "../interfaces/IGaugeController.sol";
 import "../interfaces/IPoolRegistry.sol";
+import "../interfaces/IProxyVault.sol";
 
 /*
 This is a utility library which is mainly used for off chain calculations
@@ -26,12 +27,16 @@ contract PoolUtilities{
 
     //get rates of each token per deposit for the specified pool id
     function poolRewardRatesById(uint256 _pid) external view returns (address[] memory tokens, uint256[] memory rates) {
-        (,address _gaugeAddress, , ,) = IPoolRegistry(poolRegistry).poolInfo(_pid);
-        return poolRewardRates(_gaugeAddress);
+        (address _imp, address _gaugeAddress, , ,) = IPoolRegistry(poolRegistry).poolInfo(_pid);
+        IProxyVault.VaultType vtype = IProxyVault(_imp).vaultType();
+        if(vtype == IProxyVault.VaultType.RebalancePool){
+            return rebalancePoolRewardRates(_gaugeAddress);
+        }
+        return gaugeRewardRates(_gaugeAddress);
     }
 
     //get rates of each token per deposit for the specified gauge
-    function poolRewardRates(address _gauge) public view returns (address[] memory tokens, uint256[] memory rates) {
+    function gaugeRewardRates(address _gauge) public view returns (address[] memory tokens, uint256[] memory rates) {
         //get token emission rates and gauge weighting
         uint256 emissionRate = IFxnToken(fxn).rate();
         uint256 gaugeWeight = IGaugeController(gaugeController).gauge_relative_weight(_gauge);
@@ -73,6 +78,36 @@ contract PoolUtilities{
                 }
             }
             tokens[i+1] = rewardTokens[i];
+        }
+    }
+
+    //get rates of each token per deposit for the specified rebalance pool
+    function rebalancePoolRewardRates(address _pool) public view returns (address[] memory tokens, uint256[] memory rates) {
+        //get list of reward tokens
+        address[] memory rewardTokens = IFxnGauge(_pool).getActiveRewardTokens();
+        rates = new uint256[](rewardTokens.length);
+        tokens = new address[](rewardTokens.length);
+
+        //get total supply on the pool
+        uint256 gaugeSupply = IFxnGauge(_pool).totalSupply();
+
+        //get boost ratio
+        uint256 boostRatio = IFxnGauge(_pool).getBoostRatio(convexProxy);
+
+        //calc extra rewards (not boosted, ratePerDepost = rate/totalSupply)
+        for(uint256 i = 0; i < rewardTokens.length; i++){
+            (,uint80 _rate,,uint40 finishAt) = IFxnGauge(_pool).rewardData(rewardTokens[i]);
+
+            if(block.timestamp <= uint256(finishAt)){
+                rates[i] = uint256(_rate);
+                if(gaugeSupply > 0){
+                    rates[i] = rates[i] * 1e18 / gaugeSupply;
+                }
+                if(rewardTokens[i] == fxn){
+                    rates[i] = rates[i] * boostRatio / 1e18;
+                }
+            }
+            tokens[i] = rewardTokens[i];
         }
     }
 }
