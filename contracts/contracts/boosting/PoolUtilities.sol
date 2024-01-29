@@ -6,6 +6,7 @@ import "../interfaces/IFxnGauge.sol";
 import "../interfaces/IGaugeController.sol";
 import "../interfaces/IPoolRegistry.sol";
 import "../interfaces/IProxyVault.sol";
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 /*
 This is a utility library which is mainly used for off chain calculations
@@ -13,6 +14,7 @@ This is a utility library which is mainly used for off chain calculations
 contract PoolUtilities{
     address public constant convexProxy = address(0xd11a4Ee017cA0BECA8FA45fF2abFe9C6267b7881);
     address public constant fxn = address(0x365AccFCa291e7D3914637ABf1F7635dB165Bb09);
+    address public constant vefxn = address(0xEC6B8A3F3605B083F7044C0F31f2cac0caf1d469);
     address public constant gaugeController = address(0xe60eB8098B34eD775ac44B1ddE864e098C6d7f37);
     address public immutable poolRegistry;
 
@@ -92,7 +94,7 @@ contract PoolUtilities{
         uint256 gaugeSupply = IFxnGauge(_pool).totalSupply();
 
         //get boost ratio
-        uint256 boostRatio = getBoostRatio(_pool);
+        uint256 boostRatio = getRebalancePoolBoostRatio(_pool);
 
         //calc extra rewards (not boosted, ratePerDepost = rate/totalSupply)
         for(uint256 i = 0; i < rewardTokens.length; i++){
@@ -111,8 +113,30 @@ contract PoolUtilities{
         }
     }
 
-    function getBoostRatio(address _pool) public view returns(uint256){
-        //TODO: calc out ratio
-        return 1e18;
+    function getRebalancePoolBoostRatio(address _pool) public view returns(uint256){
+        //getBoostRatio on the pool is only for a depositing user and not the parent proxy
+        //thus we have to calc the boost here
+        //working balance = min(balance, balance * 0.4 + 0.6 * veBalance * supply / veSupply) / balance
+        uint256 gaugeSupply = IFxnGauge(_pool).totalSupply();
+        uint256 vesupply = IERC20(vefxn).totalSupply();
+        uint256 vebalance = IERC20(vefxn).balanceOf(convexProxy);
+
+        //if no one is staked, assume full boost
+        if(gaugeSupply == 0) return 1e18;
+
+        (, uint256 balance, ) = IFxnGauge(_pool).voteOwnerBalances(convexProxy);
+        //if no one is using convex yet, assume full boost
+        if(balance == 0) return 1e18;
+
+        //40%
+        uint256 boostedBalance = uint256(balance) * 4 / 10;
+        // add vebalance ratio up to 60%
+        boostedBalance += vebalance * gaugeSupply / vesupply * 6 / 10;
+
+        if(boostedBalance > balance){
+            boostedBalance = balance;
+        }
+
+        return boostedBalance * 1e18 / balance;
     }
 }

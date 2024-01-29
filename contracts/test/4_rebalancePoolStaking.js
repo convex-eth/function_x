@@ -353,7 +353,8 @@ contract("staking platform", async accounts => {
     console.log("check new reward rates -> ")
     await gauge.rewardData(fxn.address).then(a=>console.log("from gauge, fxn data: " +JSON.stringify(a)));
     await poolUtil.rebalancePoolRewardRates(gauge.address).then(a=>console.log(JSON.stringify(a)));
-    await gauge.getBoostRatio(vault.address).then(a=>console.log("boost rate: " +a))
+    await gauge.getBoostRatio(vault.address).then(a=>console.log("boost rate from gauge: " +a))
+    await poolUtil.getRebalancePoolBoostRatio(gauge.address).then(a=>console.log("boost rate from util: " +a))
 
     await gauge.getActiveRewardTokens().then(a=>console.log("active rewards: " +JSON.stringify(a)));
     await vault.earned.call().then(a=>console.log("earned: " +JSON.stringify(a)));

@@ -34,4 +34,5 @@ interface IFxnGauge{
     function claim(address account, address receiver) external;
     function getBoostRatio(address _account) external view returns (uint256);
     function depositReward(address _token, uint256 _amount) external;
+    function voteOwnerBalances(address _account) external view returns(uint112 product, uint104 amount, uint40 updateAt);
 }
