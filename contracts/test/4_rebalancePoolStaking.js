@@ -186,8 +186,7 @@ contract("staking platform", async accounts => {
     // return;
 
     const advanceTime = async (secondsElaspse) => {
-      await time.increase(secondsElaspse);
-      await time.advanceBlock();
+      await fastForward(secondsElaspse);
       console.log("\n  >>>>  advance time " +(secondsElaspse/86400) +" days  >>>>\n");
     }
     const day = 86400;
@@ -326,13 +325,45 @@ contract("staking platform", async accounts => {
     tokenBalance = await staketoken.balanceOf(actingUser);
     console.log("tokenBalance: " +tokenBalance);
 
-    console.log("check reward rates...");
+    console.log("\n\ncheck reward rates...");
+
+    let wsteth = await IERC20.at("0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0");
+
+    console.log("before reward deposit -> ")
+    await poolUtil.rebalancePoolRewardRates(gauge.address).then(a=>console.log(JSON.stringify(a)));
+
+    var rewardmanager = "0x79c5f5b0753acE25ecdBdA4c2Bc86Ab074B6c2Bb";
+    await unlockAccountHardhat(rewardmanager);
+    var fxnholder = "0x2290eeFEa24A6E43b26C27187742bD1FEDC10BDB";
+    await unlockAccountHardhat(fxnholder);
+
+    //get fxn tokens
+    await setNoGas();
+    await fxn.transfer(rewardmanager, web3.utils.toWei("1000", "ether"),{from:fxnholder,gasPrice:0});
+    console.log("fxn tokens transfered to manager");
+
+    await setNoGas();
+    await fxn.approve(gauge.address, web3.utils.toWei("1000000000.0","ether"),{from:rewardmanager,gasPrice:0});
+    console.log("approved rewards")
+
+    await setNoGas();
+    await gauge.depositReward(fxn.address, web3.utils.toWei("500.0","ether"),{from:rewardmanager,gasPrice:0} );
+    console.log("rewards deposited");
+
+    console.log("check new reward rates -> ")
+    await gauge.rewardData(fxn.address).then(a=>console.log("from gauge, fxn data: " +JSON.stringify(a)));
     await poolUtil.rebalancePoolRewardRates(gauge.address).then(a=>console.log(JSON.stringify(a)));
     await gauge.getBoostRatio(vault.address).then(a=>console.log("boost rate: " +a))
 
     await gauge.getActiveRewardTokens().then(a=>console.log("active rewards: " +JSON.stringify(a)));
     await vault.earned.call().then(a=>console.log("earned: " +JSON.stringify(a)));
+    
+    await advanceTime(day);
 
+    //TODO: earned not showing fxn
+    await vault.earned.call().then(a=>console.log("earned: " +JSON.stringify(a)));
+
+    await wsteth.balanceOf(actingUser).then(a=>console.log("balance of wsteth: " +a))
     await fxn.balanceOf(actingUser).then(a=>console.log("balance of fxn: " +a))
     await fxn.balanceOf(poolFeeQueue.address).then(a=>console.log("balance of fxn feeQueue: " +a))
     await cvx.balanceOf(actingUser).then(a=>console.log("balance of cvx: " +a))
@@ -340,10 +371,16 @@ contract("staking platform", async accounts => {
     await vault.getReward();
     console.log("rewards claimed");
 
+    await wsteth.balanceOf(actingUser).then(a=>console.log("balance of wsteth: " +a))
     await fxn.balanceOf(actingUser).then(a=>console.log("balance of fxn: " +a))
     await fxn.balanceOf(poolFeeQueue.address).then(a=>console.log("balance of fxn feeQueue: " +a))
     await cvx.balanceOf(actingUser).then(a=>console.log("balance of cvx: " +a))
 
+    await advanceTime(day);
+
+    //TODO: earned not showing fxn
+    await poolUtil.rebalancePoolRewardRates(gauge.address).then(a=>console.log(JSON.stringify(a)));
+    await vault.earned.call().then(a=>console.log("earned: " +JSON.stringify(a)));
 
     console.log("withdraw...");
 

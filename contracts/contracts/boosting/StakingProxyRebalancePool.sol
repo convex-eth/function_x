@@ -119,10 +119,10 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
 
         //claim
         if(_claim){
-            //fxn rewards (claim here first then send to user after fees)
+            //fxn minting (claim here first then send to user after fees)
             try IFxnTokenMinter(fxnMinter).mint(gaugeAddress){}catch{}
 
-            //extras (will get claimed directly to owner)
+            //extras. rebalance pool will have fxn
             IFxnGauge(gaugeAddress).claim();
         }
 

@@ -92,7 +92,7 @@ contract PoolUtilities{
         uint256 gaugeSupply = IFxnGauge(_pool).totalSupply();
 
         //get boost ratio
-        uint256 boostRatio = IFxnGauge(_pool).getBoostRatio(convexProxy);
+        uint256 boostRatio = getBoostRatio(_pool);
 
         //calc extra rewards (not boosted, ratePerDepost = rate/totalSupply)
         for(uint256 i = 0; i < rewardTokens.length; i++){
@@ -109,5 +109,10 @@ contract PoolUtilities{
             }
             tokens[i] = rewardTokens[i];
         }
+    }
+
+    function getBoostRatio(address _pool) public view returns(uint256){
+        //TODO: calc out ratio
+        return 1e18;
     }
 }

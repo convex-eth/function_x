@@ -195,7 +195,7 @@ contract StakingProxyBase is IProxyVault{
     //allow arbitrary calls. some function signatures and targets are blocked
     function execute(
         address _to,
-        bytes memory _data
+        bytes calldata _data
     ) external onlyOwner returns (bool, bytes memory) {
         //fully block fxn, staking token(lp etc), and rewards
         require(_to != fxn && _to != stakingToken && _to != rewards, "!invalid target");
