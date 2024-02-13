@@ -3,6 +3,7 @@ pragma solidity 0.8.10;
 
 import "./StakingProxyBase.sol";
 import "../interfaces/IFxnGauge.sol";
+import "../interfaces/IFxUsd.sol";
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 
 /*
@@ -14,6 +15,8 @@ Thus automatic redirect must be turned off and processed locally from the vault.
 */
 contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
     using SafeERC20 for IERC20;
+
+    address public constant fxusd = address(0); 
 
     constructor(address _poolRegistry, address _feeRegistry, address _fxnminter) 
         StakingProxyBase(_poolRegistry, _feeRegistry, _fxnminter){
@@ -38,14 +41,13 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
     }
 
 
-    //deposit into gauge
+    //deposit into rebalance pool with ftoken
     function deposit(uint256 _amount) external onlyOwner nonReentrant{
         if(_amount > 0){
-            //pull tokens from user
-            address _stakingToken = stakingToken;
-            IERC20(_stakingToken).safeTransferFrom(msg.sender, address(this), _amount);
+            //pull ftokens from user
+            IERC20(stakingToken).safeTransferFrom(msg.sender, address(this), _amount);
 
-            //stake (use balanceof in case of change during transfer)
+            //stake
             IFxnGauge(gaugeAddress).deposit(_amount, address(this));
         }
         
@@ -53,21 +55,39 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
         _checkpointRewards();
     }
 
+    //deposit into rebalance pool with fxusd
+    function depositFxUsd(uint256 _amount) external onlyOwner nonReentrant{
+        if(_amount > 0){
+            //pull fxusd from user
+            IERC20(fxusd).safeTransferFrom(msg.sender, address(this), _amount);
 
-    //withdraw a staked position
+            //stake using fxusd's earn function
+            IFxUsd(fxusd).earn(gaugeAddress, _amount, address(this));
+        }
+        
+        //checkpoint rewards
+        _checkpointRewards();
+    }
+
+    //withdraw a staked position and return ftoken
     function withdraw(uint256 _amount) external onlyOwner nonReentrant{
 
-        //withdraw to vault
+        //withdraw ftoken directly to owner
         IFxnGauge(gaugeAddress).withdraw(_amount, owner);
 
         //checkpoint rewards
         _checkpointRewards();
-
-        //send back to owner any staking tokens on the vault (may differ from _amount)
-        address _stakingToken = stakingToken;
-        IERC20(_stakingToken).safeTransfer(msg.sender, IERC20(_stakingToken).balanceOf(address(this)));
     }
 
+    //withdraw a staked position and return fxusd
+    function withdrawFxUsd(uint256 _amount) external onlyOwner nonReentrant{
+
+        //wrap to fxusd and receive at owner(msg.sender)
+        IFxUsd(fxusd).wrapFrom(gaugeAddress, _amount, msg.sender);
+
+        //checkpoint rewards
+        _checkpointRewards();
+    }
 
     //return earned tokens on staking contract and any tokens that are on this vault
     function earned() external override returns (address[] memory token_addresses, uint256[] memory total_earned) {
