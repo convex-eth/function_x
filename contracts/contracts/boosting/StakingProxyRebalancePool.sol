@@ -191,4 +191,14 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
         _transferTokens(_tokenList);
     }
 
+
+    function _checkExecutable(address _address) internal override{
+        super._checkExecutable(_address);
+
+        //require shutdown for calls to fxusd
+        if(_address == fxusd){
+            (, , , , uint8 shutdown) = IPoolRegistry(poolRegistry).poolInfo(pid);
+            require(shutdown == 0,"!shutdown");
+        }
+    }
 }

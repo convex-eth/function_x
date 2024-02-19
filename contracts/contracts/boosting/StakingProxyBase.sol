@@ -192,13 +192,17 @@ contract StakingProxyBase is IProxyVault{
         }
     }
 
+    function _checkExecutable(address _address) internal virtual{
+        require(_address != fxn && _address != stakingToken && _address != rewards, "!invalid target");
+    }
+
     //allow arbitrary calls. some function signatures and targets are blocked
     function execute(
         address _to,
         bytes calldata _data
     ) external onlyOwner returns (bool, bytes memory) {
         //fully block fxn, staking token(lp etc), and rewards
-        require(_to != fxn && _to != stakingToken && _to != rewards, "!invalid target");
+        _checkExecutable(_to);
 
         //only calls to staking(gauge) address if pool is shutdown
         if(_to == gaugeAddress){
