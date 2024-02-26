@@ -4,6 +4,7 @@ pragma solidity 0.8.10;
 import "./StakingProxyBase.sol";
 import "../interfaces/IFxnGauge.sol";
 import "../interfaces/IFxUsd.sol";
+import "../interfaces/IFxFacetV2.sol";
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 
 /*
@@ -16,7 +17,7 @@ Thus automatic redirect must be turned off and processed locally from the vault.
 contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
     using SafeERC20 for IERC20;
 
-    address public constant fxusd = address(0); 
+    address public constant fxusd = address(0x085780639CC2cACd35E474e71f4d000e2405d8f6); 
 
     constructor(address _poolRegistry, address _feeRegistry, address _fxnminter) 
         StakingProxyBase(_poolRegistry, _feeRegistry, _fxnminter){
@@ -84,6 +85,17 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
 
         //wrap to fxusd and receive at owner(msg.sender)
         IFxUsd(fxusd).wrapFrom(gaugeAddress, _amount, msg.sender);
+
+        //checkpoint rewards
+        _checkpointRewards();
+    }
+
+    //withdraw from rebalance pool(v2) and return underlying base
+    function withdrawAsBase(uint256 _amount, address _fxfacet, address _fxconverter) external onlyOwner nonReentrant{
+
+        //withdraw from rebase pool as underlying
+        IFxFacetV2.ConvertOutParams memory params = IFxFacetV2.ConvertOutParams(_fxconverter,0,new uint256[](0));
+        IFxFacetV2(_fxfacet).fxRebalancePoolWithdrawAs(params, gaugeAddress, _amount);
 
         //checkpoint rewards
         _checkpointRewards();
@@ -195,8 +207,8 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
     function _checkExecutable(address _address) internal override{
         super._checkExecutable(_address);
 
-        //require shutdown for calls to fxusd
-        if(_address == fxusd){
+        //require shutdown for calls to withdraw role contracts
+        if(IFxUsd(gaugeAddress).hasRole(keccak256("WITHDRAW_FROM_ROLE"), _address)){
             (, , , , uint8 shutdown) = IPoolRegistry(poolRegistry).poolInfo(pid);
             require(shutdown == 0,"!shutdown");
         }

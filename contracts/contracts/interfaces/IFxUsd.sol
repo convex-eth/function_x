@@ -35,4 +35,6 @@ interface IFxUsd{
         address _receiver,
         uint256 _minOut
       ) external returns (uint256 _amountOut);
+
+    function hasRole(bytes32 role, address account) external view returns (bool);
 }
