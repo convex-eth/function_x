@@ -6,6 +6,7 @@ import "../interfaces/IFxnGauge.sol";
 import "../interfaces/IGaugeController.sol";
 import "../interfaces/IPoolRegistry.sol";
 import "../interfaces/IProxyVault.sol";
+import "../interfaces/IVoteEscrow.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 /*
@@ -16,6 +17,7 @@ contract PoolUtilities{
     address public constant fxn = address(0x365AccFCa291e7D3914637ABf1F7635dB165Bb09);
     address public constant vefxn = address(0xEC6B8A3F3605B083F7044C0F31f2cac0caf1d469);
     address public constant gaugeController = address(0xe60eB8098B34eD775ac44B1ddE864e098C6d7f37);
+    uint256 internal constant TOKENLESS_PRODUCTION = 40;
     address public immutable poolRegistry;
 
     constructor(address _poolRegistry){
@@ -26,6 +28,25 @@ contract PoolUtilities{
     function apr(uint256 _rate, uint256 _priceOfReward, uint256 _priceOfDeposit) external pure returns(uint256 _apr){
         return _rate * 365 days * _priceOfReward / _priceOfDeposit; 
     }
+
+    function gaugeWorkingBalance(address _gauge) public view returns (uint256) {
+        uint256 _veSupply = IVoteEscrow(vefxn).totalSupply();
+
+        uint256 _supply = IFxnGauge(_gauge).totalSupply();
+
+        // if (_owner == address(0)) _owner = _account;
+        uint256 _veBalance = IVoteEscrow(IFxnGauge(_gauge).veProxy()).adjustedVeBalance(convexProxy);
+        uint256 _balance = IFxnGauge(_gauge).sharedBalanceOf(convexProxy);
+        uint256 _workingBalance = (_balance * TOKENLESS_PRODUCTION) / 100;
+        if (_veSupply > 0) {
+          _workingBalance += (((_supply * _veBalance) / _veSupply) * (100 - TOKENLESS_PRODUCTION)) / 100;
+        }
+        if (_workingBalance > _balance) {
+          _workingBalance = _balance;
+        }
+
+        return _workingBalance;
+      }
 
     //get rates of each token per deposit for the specified pool id
     function poolRewardRatesById(uint256 _pid) external view returns (address[] memory tokens, uint256[] memory rates) {
@@ -51,7 +72,7 @@ contract PoolUtilities{
         //get supplies and deposits
         uint256 gaugeSupply = IFxnGauge(_gauge).totalSupply();
         uint256 gaugeWorkingSupply = IFxnGauge(_gauge).workingSupply();
-        uint256 convexWorking = IFxnGauge(_gauge).workingBalanceOf(convexProxy);
+        uint256 convexWorking = gaugeWorkingBalance(_gauge);
         uint256 convexDeposits = IFxnGauge(_gauge).sharedBalanceOf(convexProxy);
 
         //emission rate per working supply
@@ -113,6 +134,28 @@ contract PoolUtilities{
         }
     }
 
+    //get boost ratio for the specified pool id
+    function poolBoostRatioById(uint256 _pid) external view returns (uint256){
+        (address _imp, address _gaugeAddress, , ,) = IPoolRegistry(poolRegistry).poolInfo(_pid);
+        IProxyVault.VaultType vtype = IProxyVault(_imp).vaultType();
+        if(vtype == IProxyVault.VaultType.RebalancePool){
+            return getRebalancePoolBoostRatio(_gaugeAddress);
+        }
+        return getGaugeBoostRatio(_gaugeAddress);
+    }
+
+    //get boost ratio of an lp gauge
+    function getGaugeBoostRatio(address _gauge) public view returns(uint256){
+        //get working and deposits
+        uint256 convexWorking = gaugeWorkingBalance(_gauge);
+        uint256 convexDeposits = IFxnGauge(_gauge).sharedBalanceOf(convexProxy);
+
+        if(convexDeposits == 0) return 1e18;
+
+        return convexWorking * 1e18 / convexDeposits;
+    }
+
+    //get boost ratio of a rebalance pool
     function getRebalancePoolBoostRatio(address _pool) public view returns(uint256){
         //getBoostRatio on the pool is only for a depositing user and not the parent proxy
         //thus we have to calc the boost here

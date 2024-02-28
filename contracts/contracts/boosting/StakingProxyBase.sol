@@ -199,6 +199,7 @@ contract StakingProxyBase is IProxyVault{
     //allow arbitrary calls. some function signatures and targets are blocked
     function execute(
         address _to,
+        uint256 _value,
         bytes calldata _data
     ) external onlyOwner returns (bool, bytes memory) {
         //fully block fxn, staking token(lp etc), and rewards
@@ -210,7 +211,7 @@ contract StakingProxyBase is IProxyVault{
             require(shutdown == 0,"!shutdown");
         }
 
-        (bool success, bytes memory result) = _to.call{value:0}(_data);
+        (bool success, bytes memory result) = _to.call{value:_value}(_data);
         require(success, "!success");
         return (success, result);
     }

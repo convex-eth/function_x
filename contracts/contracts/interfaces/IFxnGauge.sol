@@ -25,6 +25,7 @@ interface IFxnGauge{
     function getStakerVoteOwner(address _account) external view returns (address);
     function numAcceptedStakers(address _account) external view returns (uint256);
     function sharedBalanceOf(address _account) external view returns (uint256);
+    function veProxy() external view returns(address);
 
     //rewards
     function rewardData(address _token) external view returns(uint96 queued, uint80 rate, uint40 lastUpdate, uint40 finishAt);

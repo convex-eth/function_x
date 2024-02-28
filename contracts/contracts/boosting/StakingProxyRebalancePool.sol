@@ -70,6 +70,26 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
         _checkpointRewards();
     }
 
+    //deposit into rebalance pool with base
+    function depositBase(uint256 _amount, uint256 _minAmountOut) external onlyOwner nonReentrant{
+        if(_amount > 0){
+            address _baseToken = IFxnGauge(gaugeAddress).baseToken();
+
+            //pull base from user
+            IERC20(_baseToken).safeTransferFrom(msg.sender, address(this), _amount);
+
+            IERC20(_baseToken).approve(fxusd, _amount);
+            //stake using fxusd's earn function
+            IFxUsd(fxusd).mintAndEarn(gaugeAddress, _amount, address(this), _minAmountOut);
+
+            //return left over
+            IERC20(_baseToken).safeTransfer(msg.sender, IERC20(_baseToken).balanceOf(address(this)) );
+        }
+        
+        //checkpoint rewards
+        _checkpointRewards();
+    }
+
     //withdraw a staked position and return ftoken
     function withdraw(uint256 _amount) external onlyOwner nonReentrant{
 

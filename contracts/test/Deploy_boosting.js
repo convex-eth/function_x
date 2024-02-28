@@ -16,20 +16,27 @@ const MockGauge = artifacts.require("MockGauge");
 const MultiRewards = artifacts.require("MultiRewards");
 const StakingProxyBase = artifacts.require("StakingProxyBase");
 const StakingProxyERC20 = artifacts.require("StakingProxyERC20");
+const StakingProxyRebalancePool = artifacts.require("StakingProxyRebalancePool");
 const PoolUtilities = artifacts.require("PoolUtilities");
 
 
+const IFxnGauge = artifacts.require("IFxnGauge");
+const IFxClaimer = artifacts.require("IFxClaimer");
 const IERC20 = artifacts.require("IERC20");
 const IGaugeController = artifacts.require("IGaugeController");
 
 
-const addAccount = async (address) => {
+const unlockAccount = async (address) => {
+  let NETWORK = config.network;
+  if(!NETWORK.includes("debug")){
+    return null;
+  }
   return new Promise((resolve, reject) => {
     web3.currentProvider.send(
       {
         jsonrpc: "2.0",
-        method: "evm_addAccount",
-        params: [address, "passphrase"],
+        method: "hardhat_impersonateAccount",
+        params: [address],
         id: new Date().getTime(),
       },
       (err, result) => {
@@ -42,14 +49,17 @@ const addAccount = async (address) => {
   });
 };
 
-const unlockAccount = async (address) => {
-  await addAccount(address);
+const setNoGas = async () => {
+  let NETWORK = config.network;
+  if(!NETWORK.includes("debug")){
+    return null;
+  }
   return new Promise((resolve, reject) => {
     web3.currentProvider.send(
       {
         jsonrpc: "2.0",
-        method: "personal_unlockAccount",
-        params: [address, "passphrase"],
+        method: "hardhat_setNextBlockBaseFeePerGas",
+        params: ["0x0"],
         id: new Date().getTime(),
       },
       (err, result) => {
@@ -119,7 +129,8 @@ contract("staking platform", async accounts => {
     let cvx = await IERC20.at(contractList.system.cvx);
     let fxn = await IERC20.at(contractList.fxn.fxn);
     let vefxn = await IERC20.at(contractList.fxn.vefxn);
-    
+    let fxusd = await IERC20.at(contractList.fxn.fxusd);
+    let sfrxeth = await IERC20.at("0xac3E018457B222d93114458476f3E3416Abbe38F");
 
     let userA = accounts[0];
     let userB = accounts[1];
@@ -134,8 +145,7 @@ contract("staking platform", async accounts => {
     userNames[userZ] = "Z";
 
     const advanceTime = async (secondsElaspse) => {
-      await time.increase(secondsElaspse);
-      await time.advanceBlock();
+      await fastForward(secondsElaspse);
       console.log("\n  >>>>  advance time " +(secondsElaspse/86400) +" days  >>>>\n");
     }
     const day = 86400;
@@ -147,7 +157,6 @@ contract("staking platform", async accounts => {
     await unlockAccount(actingUser);
 
     //deploy
-    // let voteproxy = await FxnVoterProxy.new({from:deployer});
     let voteproxy = await FxnVoterProxy.at(contractList.system.voteProxy);
     let cvxfxn = await cvxFxnToken.at(contractList.system.cvxFxn);
     let fxndeposit = await FxnDepositor.at(contractList.system.fxnDepositor);
@@ -156,11 +165,12 @@ contract("staking platform", async accounts => {
     let stakingFeeReceiver = await FeeReceiverCvxFxn.at(contractList.system.cvxFxnStakingFeeReceiver);
     let feeQueue = await FeeDepositV2.at(contractList.system.vefxnRewardQueue);
 
-
+    await setNoGas();
     let feeReg = await FeeRegistry.new({from:deployer});
     let poolReg = await PoolRegistry.new({from:deployer});
     let poolRewards = await MultiRewards.new(poolReg.address, {from:deployer});
     let vault_erc = await StakingProxyERC20.new(poolReg.address, feeReg.address, contractList.fxn.tokenMinter, {from:deployer});
+    let vault_rebalance = await StakingProxyRebalancePool.new(poolReg.address, feeReg.address, contractList.fxn.tokenMinter, {from:deployer});
     let booster = await Booster.new(voteproxy.address, fxndeposit.address, cvxfxn.address, poolReg.address, feeReg.address, {from:deployer} );
     let poolFeeQueue = await FeeDepositV2.new(contractList.system.voteProxy, contractList.system.cvxFxn, contractList.system.cvxFxnStakingFeeReceiver, {from:deployer});
     let poolUtil = await PoolUtilities.new(poolReg.address, {from:deployer});
@@ -169,8 +179,9 @@ contract("staking platform", async accounts => {
     contractList.system.poolReg = poolReg.address;
     contractList.system.poolRewards = poolRewards.address;
     contractList.system.vault_erc = vault_erc.address;
+    contractList.system.vault_rebalance = vault_rebalance.address;
     contractList.system.poolUtility = poolUtil.address;
-    // jsonfile.writeFileSync("./contracts.json", contractList, { spaces: 4 });
+    jsonfile.writeFileSync("./contracts.json", contractList, { spaces: 4 });
     console.log(contractList.system);
 
     console.log("deployed");
@@ -183,118 +194,21 @@ contract("staking platform", async accounts => {
     await voteproxy.setOperator(booster.address,{from:multisig,gasPrice:0})
     await voteproxy.operator().then(a=>console.log("current operator: " +a));
    
+    await setNoGas();
     await booster.setFeeToken(contractList.fxn.feeToken, contractList.fxn.vefxnRewardDistro, {from:deployer,gasPrice:0});
     await booster.setFeeQueue(feeQueue.address,{from:deployer,gasPrice:0});
-
+    await setNoGas();
     await booster.claimOperatorRoles({from:deployer,gasPrice:0});
     await booster.setPoolRewardImplementation(poolRewards.address,{from:deployer,gasPrice:0});
     await booster.setPoolFeeDeposit(poolFeeQueue.address,{from:deployer,gasPrice:0});
 
+    await setNoGas();
     await booster.setPendingOwner(multisig,{from:deployer});
+    await setNoGas();
     await booster.acceptPendingOwner({from:multisig,gasPrice:0});
     console.log("set new booster as operator");
 
 
-    console.log("\n\ncreate new pool...");
-    let pool = "0xc15f285679a1ef2d25f53d4cbd0265e1d02f2a92";
-    let lptoken = await IERC20.at("0xE06A65e09Ae18096B99770A809BA175FA05960e2");
-    let gauge = await MockGauge.new(lptoken.address,{from:deployer});
-
-    console.log("pool token: " +lptoken.address);
-    console.log("gauge address: " +gauge.address);
-
-    var controller = await IGaugeController.at(contractList.fxn.gaugeController);
-    var controllerAdmin = await controller.admin();
-    await unlockAccount(controllerAdmin);
-    await controller.add_type("testtype",web3.utils.toWei("1.0","ether"),{from:controllerAdmin,gasPrice:0});
-    await controller.add_gauge(gauge.address,0,web3.utils.toWei("1.0","ether"),{from:controllerAdmin,gasPrice:0});
-    console.log("gauge added to controller");
-    await controller.gauge_relative_weight(gauge.address).then(a=>console.log("gauge rel weight: " +a))
-
-    var tx = await booster.addPool(vault_erc.address, gauge.address, lptoken.address,{from:deployer,gasPrice:0});
-    console.log("pool added, gas: " +tx.receipt.gasUsed);
-    var poolid = Number(await poolReg.poolLength()) - 1;
-    console.log("new pool count: " +(poolid+1));
-
-    var poolinfo = await poolReg.poolInfo(poolid);
-    console.log(poolinfo);
-
-
-    console.log("transfer lp tokens to actingUser...");
-    let holder = "0xf42e2b73ea79812a7c3e4ba8ed052c523765719f";
-    let depositAmount = "10.0"
-    await unlockAccount(holder);
-    await lptoken.transfer(actingUser, web3.utils.toWei(depositAmount, "ether"),{from:holder,gasPrice:0});
-    var tokenBalance = await lptoken.balanceOf(actingUser);
-    console.log("tokenBalance: " +tokenBalance);
-
-
-    console.log("\n\nstake to new pool...");
-
-    //create vault
-    var tx = await booster.createVault(poolid,{from:actingUser});
-    console.log("created vault: gas = " +tx.receipt.gasUsed);
-    
-    //get vault
-    let vaultAddress = await poolReg.vaultMap(poolid,actingUser);
-    let vault = await StakingProxyERC20.at(vaultAddress)
-    console.log("vault at " +vault.address);// +", gas: " +tx.receipt.gasUsed);
-
-    await vault.gaugeAddress().then(a=>console.log("vault.gaugeAddress() " +a))
-    await vault.stakingToken().then(a=>console.log("vault.stakingToken() " +a))
-    await vault.rewards().then(a=>console.log("vault.rewards() " +a))
-    
-    var poolrewards = await MultiRewards.at(await vault.rewards());
-    console.log("extra rewards at: " +poolrewards.address)
-    await poolrewards.rewardState().then(a=>console.log("reward state? " +a));
-
-    await lptoken.approve(vault.address, web3.utils.toWei("1000000000.0","ether"),{from:actingUser});
-    console.log("approved");
-    var tx = await vault.deposit(web3.utils.toWei(depositAmount,"ether"), {from:actingUser});
-    console.log("staked, gas: " +tx.receipt.gasUsed);
-
-    await gauge.balanceOf(vault.address).then(a=>console.log("gauge balance of vault: " +a));
-    tokenBalance = await lptoken.balanceOf(actingUser);
-    console.log("tokenBalance: " +tokenBalance);
-
-    console.log("check reward rates...");
-    await poolUtil.poolRewardRates(gauge.address).then(a=>console.log(JSON.stringify(a)));
-
-    await gauge.getActiveRewardTokens().then(a=>console.log("active rewards: " +JSON.stringify(a)));
-    await vault.earned.call().then(a=>console.log("earned: " +JSON.stringify(a)));
-
-    await fxn.balanceOf(actingUser).then(a=>console.log("balance of fxn: " +a))
-    await fxn.balanceOf(poolFeeQueue.address).then(a=>console.log("balance of fxn feeQueue: " +a))
-    await cvx.balanceOf(actingUser).then(a=>console.log("balance of cvx: " +a))
-
-    await vault.getReward();
-    console.log("rewards claimed");
-
-    await fxn.balanceOf(actingUser).then(a=>console.log("balance of fxn: " +a))
-    await fxn.balanceOf(poolFeeQueue.address).then(a=>console.log("balance of fxn feeQueue: " +a))
-    await cvx.balanceOf(actingUser).then(a=>console.log("balance of cvx: " +a))
-
-
-    console.log("withdraw...");
-
-    tokenBalance = await lptoken.balanceOf(actingUser);
-    await gauge.balanceOf(vault.address).then(a=>console.log("gauge balance of vault: " +a));
-    console.log("tokenBalance before: " +tokenBalance);
-
-    await vault.withdraw(web3.utils.toWei(depositAmount,"ether"),{from:actingUser});
-    console.log("withdraw complete");
-
-    await gauge.balanceOf(vault.address).then(a=>console.log("gauge balance of vault: " +a));
-    tokenBalance = await lptoken.balanceOf(actingUser);
-    console.log("tokenBalance after: " +tokenBalance);
-    
-
-    console.log("check reward rates when no supply...");
-    await poolUtil.poolRewardRates(gauge.address).then(a=>console.log(JSON.stringify(a)));
-    console.log("---")
-    await poolUtil.poolRewardRatesById(poolid).then(a=>console.log(JSON.stringify(a)));
-    console.log("done");
-    
   });
 });
 
