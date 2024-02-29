@@ -45,6 +45,8 @@ contract FeeDepositV2 {
         platformReceiver = address(0x1389388d01708118b497f59521f6943Be2541bb7);
         cvxfxnReceiver = _initialReceiver;
         requireProcessing[_initialReceiver] = true;
+        rewardToken = _rewardToken;
+        emit RewardTokenSet(_rewardToken);
     }
 
     modifier onlyOwner() {

@@ -189,7 +189,13 @@ contract("staking platform", async accounts => {
     console.log(contractList.system);
 
     console.log("deployed");
+    await setNoGas();
+    await booster.setFeeToken(contractList.fxn.feeToken, contractList.fxn.vefxnRewardDistro, {from:deployer,gasPrice:0});
+    await booster.setFeeQueue(feeQueue.address,{from:deployer,gasPrice:0});
+    await booster.setPendingOwner(multisig,{from:deployer});
 
+
+    // ----   msig   ----
     console.log("old booster at: " +oldbooster.address);
     await oldbooster.isShutdown().then(a=>console.log("old is shutdown? " +a));
     await oldbooster.shutdownSystem({from:multisig,gasPrice:0});
@@ -199,17 +205,17 @@ contract("staking platform", async accounts => {
     await voteproxy.operator().then(a=>console.log("current operator: " +a));
    
     await setNoGas();
-    await booster.setFeeToken(contractList.fxn.feeToken, contractList.fxn.vefxnRewardDistro, {from:deployer,gasPrice:0});
-    await booster.setFeeQueue(feeQueue.address,{from:deployer,gasPrice:0});
-    await setNoGas();
-    await booster.claimOperatorRoles({from:deployer,gasPrice:0});
-    await booster.setPoolRewardImplementation(poolRewards.address,{from:deployer,gasPrice:0});
-    await booster.setPoolFeeDeposit(poolFeeQueue.address,{from:deployer,gasPrice:0});
-
-    await setNoGas();
-    await booster.setPendingOwner(multisig,{from:deployer});
-    await setNoGas();
     await booster.acceptPendingOwner({from:multisig,gasPrice:0});
+    await booster.claimOperatorRoles({from:multisig,gasPrice:0});
+    await booster.setPoolFeeDeposit(poolFeeQueue.address,{from:multisig,gasPrice:0});
+    
+    /// ---- end msig ------
+
+    //post txs
+    await booster.setPoolRewardImplementation(poolRewards.address,{from:deployer,gasPrice:0});
+
+    
+    
     console.log("set new booster as operator");
 
 
