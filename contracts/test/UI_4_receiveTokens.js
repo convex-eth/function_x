@@ -183,6 +183,15 @@ contract("staking platform", async accounts => {
     await sfrxeth.transfer(actingUser, web3.utils.toWei(sfrxethAmount, "ether"),{from:holder,gasPrice:0});
     var sfrxethBalance = await sfrxeth.balanceOf(actingUser);
     console.log("sfrxeth Balance: " +fxusdBalance);
+
+    console.log("transfer lp tokens to actingUser...");
+    let lptoken = await IERC20.at("0x1062fd8ed633c1f080754c19317cb3912810b5e5");
+    var holder = "0x724476f141ED2DE4DA22eBDF435905dEf1118317";
+    let lpAmount = "1000.0"
+    await unlockAccount(holder);
+    await lptoken.transfer(actingUser, web3.utils.toWei(lpAmount, "ether"),{from:holder,gasPrice:0});
+    var lpBalance = await lptoken.balanceOf(actingUser);
+    console.log("lpBalance: " +lpBalance);
   });
 });
 
