@@ -163,7 +163,7 @@ contract("staking platform", async accounts => {
     let oldbooster = await Booster.at(await voteproxy.operator());
     let staking = await cvxFxnStaking.at(contractList.system.cvxFxnStaking);
     let stakingFeeReceiver = await FeeReceiverCvxFxn.at(contractList.system.cvxFxnStakingFeeReceiver);
-    let feeQueue = await FeeDepositV2.at(contractList.system.vefxnRewardQueue);
+    // let feeQueue = await FeeDepositV2.at(contractList.system.vefxnRewardQueue);
 
     await setNoGas();
     let feeReg = await FeeRegistry.new({from:deployer});
@@ -172,7 +172,9 @@ contract("staking platform", async accounts => {
     let vault_erc = await StakingProxyERC20.new(poolReg.address, feeReg.address, contractList.fxn.tokenMinter, {from:deployer});
     let vault_rebalance = await StakingProxyRebalancePool.new(poolReg.address, feeReg.address, contractList.fxn.tokenMinter, {from:deployer});
     let booster = await Booster.new(voteproxy.address, fxndeposit.address, cvxfxn.address, poolReg.address, feeReg.address, {from:deployer} );
-    let poolFeeQueue = await FeeDepositV2.new(contractList.system.voteProxy, contractList.system.cvxFxn, contractList.system.cvxFxnStakingFeeReceiver, {from:deployer});
+    let poolFeeQueue = await FeeDepositV2.new(contractList.system.voteProxy, contractList.system.cvxFxn, contractList.system.cvxFxnStakingFeeReceiver, addressZero, {from:deployer});
+    let feeQueue = await FeeDepositV2.new(voteproxy.address, cvxfxn.address, stakingFeeReceiver.address, contractList.fxn.feeToken, {from:deployer});
+    // await feeQueue.setRewardToken(contractList.fxn.feeToken, {from:deployer});
     let poolUtil = await PoolUtilities.new(poolReg.address, {from:deployer});
     contractList.system.booster = booster.address;
     contractList.system.feeReg = feeReg.address;
@@ -181,6 +183,8 @@ contract("staking platform", async accounts => {
     contractList.system.vault_erc = vault_erc.address;
     contractList.system.vault_rebalance = vault_rebalance.address;
     contractList.system.poolUtility = poolUtil.address;
+    contractList.system.boosterRewardQueue = poolFeeQueue.address;
+    contractList.system.vefxnRewardQueue = feeQueue.address;
     jsonfile.writeFileSync("./contracts.json", contractList, { spaces: 4 });
     console.log(contractList.system);
 

@@ -172,7 +172,7 @@ contract("staking platform", async accounts => {
     let vault_erc = await StakingProxyERC20.new(poolReg.address, feeReg.address, contractList.fxn.tokenMinter, {from:deployer});
     let vault_rebalance = await StakingProxyRebalancePool.new(poolReg.address, feeReg.address, contractList.fxn.tokenMinter, {from:deployer});
     let booster = await Booster.new(voteproxy.address, fxndeposit.address, cvxfxn.address, poolReg.address, feeReg.address, {from:deployer} );
-    let poolFeeQueue = await FeeDepositV2.new(contractList.system.voteProxy, contractList.system.cvxFxn, contractList.system.cvxFxnStakingFeeReceiver, {from:deployer});
+    let poolFeeQueue = await FeeDepositV2.new(contractList.system.voteProxy, contractList.system.cvxFxn, contractList.system.cvxFxnStakingFeeReceiver, addressZero, {from:deployer});
     let poolUtil = await PoolUtilities.new(poolReg.address, {from:deployer});
     contractList.system.booster = booster.address;
     contractList.system.feeReg = feeReg.address;
@@ -373,8 +373,14 @@ contract("staking platform", async accounts => {
     await wsteth.balanceOf(actingUser).then(a=>console.log("balance of wsteth: " +a))
     await fxn.balanceOf(actingUser).then(a=>console.log("balance of fxn: " +a))
     await fxn.balanceOf(poolFeeQueue.address).then(a=>console.log("balance of fxn feeQueue: " +a))
+    await fxn.balanceOf(contractList.system.treasury).then(a=>console.log("balance of fxn treasury: " +a))
     await cvx.balanceOf(actingUser).then(a=>console.log("balance of cvx: " +a))
 
+    await booster.claimBoostFees();
+    console.log("claim boost fees");
+    await fxn.balanceOf(poolFeeQueue.address).then(a=>console.log("balance of fxn feeQueue: " +a))
+    await fxn.balanceOf(contractList.system.treasury).then(a=>console.log("balance of fxn treasury: " +a))
+    
     await advanceTime(day);
 
     await poolUtil.rebalancePoolRewardRates(gauge.address).then(a=>console.log(JSON.stringify(a)));
