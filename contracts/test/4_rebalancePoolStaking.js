@@ -223,7 +223,7 @@ contract("staking platform", async accounts => {
       gauge = fethPool;
       console.log("\n>>> using feth >>>\n")
     }
-    staketoken = await gauge.asset();
+    staketoken = await IERC20.at(await gauge.asset());
 
     console.log("pool asset: " +staketoken.address);
     console.log("pool address: " +gauge.address);
