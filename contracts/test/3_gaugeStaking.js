@@ -226,7 +226,7 @@ contract("staking platform", async accounts => {
     // console.log("gauge added to controller");
     await controller.gauge_relative_weight(gauge.address).then(a=>console.log("gauge rel weight: " +a))
 
-    var tx = await booster.addPool(vault_erc.address, gauge.address, lptoken.address,{from:deployer,gasPrice:0});
+    var tx = await booster.addPool(vault_erc.address, gauge.address, await gauge.stakingToken(),{from:deployer,gasPrice:0});
     console.log("pool added, gas: " +tx.receipt.gasUsed);
     var poolid = Number(await poolReg.poolLength()) - 1;
     console.log("new pool count: " +(poolid+1));

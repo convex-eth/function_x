@@ -16,6 +16,7 @@ interface IFxnGauge{
     function balanceOf(address _account) external view returns(uint256);
     function integrate_fraction(address account) external view returns (uint256);
     function baseToken() external view returns(address);
+    function asset() external view returns(address);
     function market() external view returns(address);
 
     //weight sharing

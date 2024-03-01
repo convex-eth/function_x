@@ -214,25 +214,24 @@ contract("staking platform", async accounts => {
     let fxusdPool = await IFxnGauge.at("0xb925F8CAA6BE0BFCd1A7383168D1c932D185A748");
     let feth = await IERC20.at("0x53805A76E1f5ebbFE7115F16f9c87C2f7e633726");
 
-    let useFxusd = true;
+    let useFxusd = false;
 
     if(useFxusd){
       gauge = fxusdPool;
-      staketoken = fxusd;
       console.log("\n>>> using fxusd >>>\n")
     }else{
       gauge = fethPool;
-      staketoken = feth;
       console.log("\n>>> using feth >>>\n")
     }
+    staketoken = await gauge.asset();
 
-    // console.log("stake token: " +staketoken.address);
-    console.log("gauge address: " +gauge.address);
+    console.log("pool asset: " +staketoken.address);
+    console.log("pool address: " +gauge.address);
 
     await setNoGas();
-    var tx = await booster.addPool(vault_rebalance.address, fethPool.address, feth.address,{from:deployer,gasPrice:0});
+    var tx = await booster.addPool(vault_rebalance.address, fethPool.address, await fethPool.asset(),{from:deployer,gasPrice:0});
     console.log("pool added, gas: " +tx.receipt.gasUsed);
-    var tx = await booster.addPool(vault_rebalance.address, fxusdPool.address, sfrxeth.address,{from:deployer,gasPrice:0});
+    var tx = await booster.addPool(vault_rebalance.address, fxusdPool.address, await fxusdPool.asset(),{from:deployer,gasPrice:0});
     console.log("pool added, gas: " +tx.receipt.gasUsed);
 
     var poolid = Number(await poolReg.poolLength()) - 1;

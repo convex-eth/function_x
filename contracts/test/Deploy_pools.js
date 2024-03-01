@@ -166,23 +166,93 @@ contract("staking platform", async accounts => {
     let feeQueue = await FeeDepositV2.at(contractList.system.vefxnRewardQueue);
     let vault_erc = await StakingProxyERC20.at(contractList.system.vault_erc);
     let vault_rebalance = await StakingProxyRebalancePool.at(contractList.system.vault_rebalance);
+    let poolReg = await PoolRegistry.at(contractList.system.poolReg);
 
     console.log("\n\ncreate pools...");
-    let fethPool = await IFxnGauge.at("0xc6dEe5913e010895F3702bc43a40d661B13a40BD");
-    let fxusdPool = await IFxnGauge.at("0xb925F8CAA6BE0BFCd1A7383168D1c932D185A748");
-    let feth = await IERC20.at("0x53805A76E1f5ebbFE7115F16f9c87C2f7e633726");
-    let cvxfxngauge = await IFxnGauge.at("0xfEFafB9446d84A9e58a3A2f2DDDd7219E8c94FbB");
-    let cvxfxnlptoken = await IERC20.at("0x1062fd8ed633c1f080754c19317cb3912810b5e5");
-  
-    await advanceTime(day);
 
-    await setNoGas();
-    var tx = await booster.addPool(vault_rebalance.address, fethPool.address, feth.address,{from:deployer,gasPrice:0});
-    console.log("pool added feth, gas: " +tx.receipt.gasUsed);
-    var tx = await booster.addPool(vault_rebalance.address, fxusdPool.address, sfrxeth.address,{from:deployer,gasPrice:0});
-    console.log("pool added sfrxeth-fxusd, gas: " +tx.receipt.gasUsed);
-    var tx = await booster.addPool(vault_erc.address, cvxfxngauge.address, cvxfxnlptoken.address,{from:deployer,gasPrice:0});
-    console.log("pool added cvxfxn gauge, gas: " +tx.receipt.gasUsed);
+    var deployedData = [];
+
+    const deployRebalancePool = async (stakingAddress, targetname) => {
+      var imp = vault_rebalance.address;
+      console.log("\n----- Deploy Rebalance Pool ------\n");
+      console.log("name: " +targetname);
+      console.log("imp: " +imp);
+      var pool = await IFxnGauge.at(stakingAddress);
+      console.log("pool: " +pool.address);
+
+      //get stakingToken
+      var stakingToken = await pool.asset();
+      console.log("stakingToken: " +stakingToken);
+  
+      //add pool
+      var tx = await booster.addPool(imp, pool.address, stakingToken, {from:deployer});
+      console.log("pool added, gas: " +tx.receipt.gasUsed);
+
+      var poolLength = await poolReg.poolLength();
+      console.log("pool id: " +(poolLength-1) );
+
+      var poolinfo = await poolReg.poolInfo(poolLength-1);
+      console.log("pool info: " +JSON.stringify(poolinfo));
+
+      deployedData.push({
+        id: poolLength-1,
+        implementation: imp,
+        stakingAddress: pool.address,
+        stakingToken: stakingToken,
+        rewardsAddress: poolinfo.rewardsAddress,
+        name: targetname
+      })
+    }
+
+    const deployERC20Pool = async (stakingAddress, targetname) => {
+      var imp = vault_erc.address;
+      console.log("\n----- Deploy erc20 Pool ------\n");
+      console.log("name: " +targetname);
+      console.log("imp: " +imp);
+      var pool = await IFxnGauge.at(stakingAddress);
+      console.log("gauge: " +pool.address);
+
+      //get stakingToken
+      var stakingToken = await pool.stakingToken();
+      console.log("stakingToken: " +stakingToken);
+  
+      //add pool
+      var tx = await booster.addPool(imp, pool.address, stakingToken, {from:deployer});
+      console.log("pool added, gas: " +tx.receipt.gasUsed);
+
+      var poolLength = await poolReg.poolLength();
+      console.log("pool id: " +(poolLength-1) );
+
+      var poolinfo = await poolReg.poolInfo(poolLength-1);
+      console.log("pool info: " +JSON.stringify(poolinfo));
+
+      deployedData.push({
+        id: poolLength-1,
+        implementation: imp,
+        stakingAddress: pool.address,
+        stakingToken: stakingToken,
+        rewardsAddress: poolinfo.rewardsAddress,
+        name: targetname
+      })
+    }
+
+    //rebalance pools
+    await deployRebalancePool("0xc6dEe5913e010895F3702bc43a40d661B13a40BD", "RebalancePool - fEth wsteth");
+    await deployRebalancePool("0xB87A8332dFb1C76Bb22477dCfEdDeB69865cA9f9", "RebalancePool - fEth xsteth");
+    await deployRebalancePool("0x9aD382b028e03977D446635Ba6b8492040F829b7", "RebalancePool - fxusd wsteth");
+    await deployRebalancePool("0x0417CE2934899d7130229CDa39Db456Ff2332685", "RebalancePool - fxusd xsteth");
+    await deployRebalancePool("0xb925F8CAA6BE0BFCd1A7383168D1c932D185A748", "RebalancePool - fxusd sfrxeth");
+    await deployRebalancePool("0x4a2ab45D27428901E826db4a52Dae00594b68022", "RebalancePool - fxusd xfrxeth");
+
+    //lps
+    await deployERC20Pool("0xA5250C540914E012E22e623275E290c4dC993D11", "CurveConvex LP - Fxn/Eth");
+    await deployERC20Pool("0xfEFafB9446d84A9e58a3A2f2DDDd7219E8c94FbB", "CurveConvex LP - cvxFxn/Fxn");
+    await deployERC20Pool("0x5b1D12365BEc01b8b672eE45912d1bbc86305dba", "CurveConvex LP - sdFxn/Fxn");
+
+
+    console.log("data:");
+    console.log(JSON.stringify(deployedData, null, 4));
+    console.log("done");
 
   });
 });
