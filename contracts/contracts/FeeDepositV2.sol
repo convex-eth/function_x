@@ -18,7 +18,7 @@ contract FeeDepositV2 {
     address public immutable cvxfxn;
     
     uint256 public constant denominator = 10000;
-    uint256 public platformIncentive = 2000;
+    uint256 public platformIncentive = 5000;
     uint256 public vlcvxIncentive = 0;
     address public platformReceiver;
     address public cvxfxnReceiver;
@@ -39,12 +39,14 @@ contract FeeDepositV2 {
     event RewardsDistributed(address indexed token, uint256 amount);
     event RewardTokenSet(address indexed token);
 
-    constructor(address _proxy, address _cvxfxn, address _initialReceiver) {
+    constructor(address _proxy, address _cvxfxn, address _initialReceiver, address _rewardToken) {
         vefxnProxy = _proxy;
         cvxfxn = _cvxfxn;
         platformReceiver = address(0x1389388d01708118b497f59521f6943Be2541bb7);
         cvxfxnReceiver = _initialReceiver;
         requireProcessing[_initialReceiver] = true;
+        rewardToken = _rewardToken;
+        emit RewardTokenSet(_rewardToken);
     }
 
     modifier onlyOwner() {
@@ -58,13 +60,13 @@ contract FeeDepositV2 {
     }
 
     function setPlatformIncentive(uint256 _incentive) external onlyOwner{
-        require(_incentive <= 5000, "too high");
+        require(_incentive <= denominator, "too high");
         platformIncentive = _incentive;
         emit SetPlatformIncentive(_incentive);
     }
 
     function setvlCvxIncentive(uint256 _incentive) external onlyOwner{
-        require(_incentive <= 5000, "too high");
+        require(_incentive <= denominator, "too high");
         vlcvxIncentive = _incentive;
         emit SetvlCvxIncentive(_incentive);
     }
@@ -131,11 +133,11 @@ contract FeeDepositV2 {
         if(vlcvxAmount > 0 || rewardvlcvxAmount > 0){
             if(vlcvxAmount > 0){
                 IERC20(fxn).safeTransfer(vlcvxReceiver, vlcvxAmount);
-                emit PlatformFeesDistributed(fxn,vlcvxAmount);
+                emit VlcvxFeesDistributed(fxn,vlcvxAmount);
             }
             if(rewardvlcvxAmount > 0){
                 IERC20(rewardToken).safeTransfer(vlcvxReceiver, rewardvlcvxAmount);
-                emit PlatformFeesDistributed(rewardToken,rewardvlcvxAmount);
+                emit VlcvxFeesDistributed(rewardToken,rewardvlcvxAmount);
             }
             if(requireProcessing[vlcvxReceiver]){
                 IFeeReceiver(vlcvxReceiver).processFees();

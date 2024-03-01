@@ -6,6 +6,11 @@ interface IRewards{
         address token;
         uint256 amount;
     }
+    enum RewardState{
+        NotInitialized,
+        NoRewards,
+        Active
+    }
     
     function initialize(uint256 _pid, bool _startActive) external;
     function addReward(address _rewardsToken, address _distributor) external;
@@ -17,10 +22,11 @@ interface IRewards{
     function deposit(address _owner, uint256 _amount) external;
     function withdraw(address _owner, uint256 _amount) external;
     function getReward(address _forward) external;
+    function getRewardFilter(address _forward, address[] calldata _tokens) external;
     function notifyRewardAmount(address _rewardsToken, uint256 _reward) external;
     function balanceOf(address account) external view returns (uint256);
     function claimableRewards(address _account) external view returns(EarnedData[] memory userRewards);
     function rewardTokens(uint256 _rid) external view returns (address);
     function rewardTokenLength() external view returns(uint256);
-    function active() external view returns(bool);
+    function rewardState() external view returns(RewardState);
 }

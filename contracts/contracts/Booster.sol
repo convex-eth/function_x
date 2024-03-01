@@ -4,6 +4,8 @@ pragma solidity 0.8.10;
 
 import "./interfaces/IStaker.sol";
 import "./interfaces/IFeeReceiver.sol";
+import "./interfaces/IPoolRegistry.sol";
+import "./interfaces/IProxyVault.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
@@ -22,33 +24,43 @@ contract Booster{
     address public immutable proxy;
     address public immutable fxnDepositor;
     address public immutable cvxfxn;
+    address public immutable poolRegistry;
+    address public immutable feeRegistry;
     address public owner;
     address public pendingOwner;
 
+    address public poolManager;
     address public rewardManager;
-    address public feeclaimer;
     bool public isShutdown;
     address public feeQueue;
-    bool public feeQueueProcess;
     address public feeToken;
     address public feeDistro;
+    address public boostFeeQueue;
 
     // mapping(address=>mapping(address=>bool)) public feeClaimMap;
 
 
-    constructor(address _proxy, address _depositor, address _cvxfxn) {
+    constructor(address _proxy, address _depositor, address _cvxfxn, address _poolReg, address _feeReg) {
         proxy = _proxy;
         fxnDepositor = _depositor;
         cvxfxn = _cvxfxn;
         isShutdown = false;
         owner = msg.sender;
         rewardManager = msg.sender;
+        poolManager = msg.sender;
+        poolRegistry = _poolReg;
+        feeRegistry = _feeReg;
      }
 
     /////// Owner Section /////////
 
     modifier onlyOwner() {
-        require(owner == msg.sender, "!auth");
+        require(owner == msg.sender, "!o_auth");
+        _;
+    }
+
+    modifier onlyPoolManager() {
+        require(poolManager == msg.sender, "!pool_auth");
         _;
     }
 
@@ -73,23 +85,22 @@ contract Booster{
         emit RewardManagerChanged(_rmanager);
     }
 
+    //set pool manager
+    function setPoolManager(address _pmanager) external onlyOwner{
+        poolManager = _pmanager;
+        emit PoolManagerChanged(_pmanager);
+    }
+
     //make execute() calls to the proxy voter
     function _proxyCall(address _to, bytes memory _data) internal{
         (bool success,) = IStaker(proxy).execute(_to,uint256(0),_data);
         require(success, "Proxy Call Fail");
     }
 
-    //set fee queue, a contract fees are moved to when claiming
-    function setFeeQueue(address _queue, bool _process) external onlyOwner{
+    //set fee queue for vefxn
+    function setFeeQueue(address _queue) external onlyOwner{
         feeQueue = _queue;
-        feeQueueProcess = _process;
-        emit FeeQueueChanged(_queue, _process);
-    }
-
-    //set who can call claim fees, 0x0 address will allow anyone to call
-    function setFeeClaimer(address _claimer) external onlyOwner{
-        feeclaimer = _claimer;
-        emit FeeClaimerChanged(_claimer);
+        emit FeeQueueChanged(_queue);
     }
 
     function setFeeToken(address _feeToken, address _distro) external onlyOwner{
@@ -98,6 +109,14 @@ contract Booster{
         emit FeeTokenSet(_feeToken, _distro);
     }
 
+    //claim operator roles for certain systems for direct access
+    function claimOperatorRoles() external onlyOwner{
+        require(!isShutdown,"shutdown");
+
+        //claim operator role of pool registry
+        bytes memory data = abi.encodeWithSelector(bytes4(keccak256("setOperator(address)")), address(this));
+        _proxyCall(poolRegistry,data);
+    }
     
     //shutdown this contract.
     function shutdownSystem() external onlyOwner{
@@ -142,23 +161,81 @@ contract Booster{
         emit Recovered(_tokenAddress, _tokenAmount);
     }
 
+    //set fees on user vaults
+    function setPoolFees(uint256 _cvxfxs, uint256 _cvx, uint256 _platform) external onlyOwner{
+        require(!isShutdown,"shutdown");
+
+        bytes memory data = abi.encodeWithSelector(bytes4(keccak256("setFees(uint256,uint256,uint256)")), _cvxfxs, _cvx, _platform);
+        _proxyCall(feeRegistry,data);
+    }
+
+    //set fee deposit address for all user vaults
+    function setPoolFeeDeposit(address _deposit) external onlyOwner{
+        require(!isShutdown,"shutdown");
+
+        //change on fee registry
+        bytes memory data = abi.encodeWithSelector(bytes4(keccak256("setDepositAddress(address)")), _deposit);
+        _proxyCall(feeRegistry,data);
+
+        //also change here
+        boostFeeQueue = _deposit;
+        emit BoostFeeQueueChanged(_deposit);
+    }
+
+    //add pool on registry
+    function addPool(address _implementation, address _stakingAddress, address _stakingToken) external onlyPoolManager{
+        IPoolRegistry(poolRegistry).addPool(_implementation, _stakingAddress, _stakingToken);
+    }
+
+    //set a new reward pool implementation for future pools
+    function setPoolRewardImplementation(address _impl) external onlyPoolManager{
+        IPoolRegistry(poolRegistry).setRewardImplementation(_impl);
+    }
+
+    //deactivate a pool
+    function deactivatePool(uint256 _pid) external onlyPoolManager{
+        IPoolRegistry(poolRegistry).deactivatePool(_pid);
+    }
+
+    //set extra reward contracts to be active when pools are created
+    function setRewardActiveOnCreation(bool _active) external onlyPoolManager{
+        IPoolRegistry(poolRegistry).setRewardActiveOnCreation(_active);
+    }
+
     //////// End Owner Section ///////////
 
+    function createVault(uint256 _pid) external returns (address){
+        //create minimal proxy vault for specified pool
+        // (address vault, address stakeAddress, address stakeToken, address rewards) = IPoolRegistry(poolRegistry).addUserVault(_pid, msg.sender);
+        (address vault, address stakeAddress, ,) = IPoolRegistry(poolRegistry).addUserVault(_pid, msg.sender);
 
-    //claim fees - if set, move to a fee queue that rewards can pull from
+        //make voterProxy call proxyToggleStaker(vault) on the pool's stakingAddress to set it as a proxied child
+        bytes memory data = abi.encodeWithSelector(bytes4(keccak256("toggleVoteSharing(address)")), vault);
+        _proxyCall(stakeAddress,data);
+
+        //call proxy initialize
+        IProxyVault(vault).initialize(msg.sender, _pid);
+
+        //set vault vefxs proxy
+        data = abi.encodeWithSelector(bytes4(keccak256("setVeFXNProxy(address)")), proxy);
+        _proxyCall(vault,data);
+
+        return vault;
+    }
+
+    //claim fees for vefxn
     function claimFees() external {
-        require(feeclaimer == address(0) || feeclaimer == msg.sender, "!auth");
+        require(feeQueue != address(0),"!queue");
 
-        uint256 bal;
-        if(feeQueue != address(0)){
-            bal = IStaker(proxy).claimFees(feeDistro, feeToken, feeQueue);
-            if(feeQueueProcess){
-                IFeeReceiver(feeQueue).processFees();
-            }
-        }else{
-            bal = IStaker(proxy).claimFees(feeDistro, feeToken, address(this));
-        }
-        emit FeesClaimed(bal);
+        IStaker(proxy).claimFees(feeDistro, feeToken, feeQueue);
+        IFeeReceiver(feeQueue).processFees();
+    }
+
+    //claim fees for boosting
+    function claimBoostFees() external {
+        require(boostFeeQueue != address(0),"!queue");
+
+        IFeeReceiver(boostFeeQueue).processFees();
     }
 
 
@@ -166,12 +243,12 @@ contract Booster{
     /* ========== EVENTS ========== */
     event SetPendingOwner(address indexed _address);
     event OwnerChanged(address indexed _address);
-    event FeeQueueChanged(address indexed _address, bool _useProcess);
-    event FeeClaimerChanged(address indexed _address);
+    event FeeQueueChanged(address indexed _address);
+    event BoostFeeQueueChanged(address indexed _address);
     event FeeTokenSet(address indexed _address, address _distro);
     event RewardManagerChanged(address indexed _address);
+    event PoolManagerChanged(address indexed _address);
     event Shutdown();
     event DelegateSet(address indexed _address);
-    event FeesClaimed(uint256 _amount);
     event Recovered(address indexed _token, uint256 _amount);
 }
