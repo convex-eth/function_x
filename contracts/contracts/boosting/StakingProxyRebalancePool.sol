@@ -117,6 +117,10 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
         IFxFacetV2.ConvertOutParams memory params = IFxFacetV2.ConvertOutParams(_fxconverter,0,new uint256[](0));
         IFxFacetV2(_fxfacet).fxRebalancePoolWithdrawAs(params, gaugeAddress, _amount);
 
+        //return left over
+        address _baseToken = IFxnGauge(gaugeAddress).baseToken();
+        IERC20(_baseToken).safeTransfer(msg.sender, IERC20(_baseToken).balanceOf(address(this)) );
+
         //checkpoint rewards
         _checkpointRewards();
     }
@@ -171,9 +175,6 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
 
         //claim
         if(_claim){
-            //fxn minting (claim here first then send to user after fees)
-            try IFxnTokenMinter(fxnMinter).mint(gaugeAddress){}catch{}
-
             //extras. rebalance pool will have fxn
             IFxnGauge(gaugeAddress).claim();
         }
@@ -196,10 +197,7 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
 
         //claim
         if(_claim){
-            //fxn rewards
-            try IFxnTokenMinter(fxnMinter).mint(gaugeAddress){}catch{}
-
-            //extras
+            //extras. rebalance pool will have fxn
             IFxnGauge(gaugeAddress).claim();
         }
 

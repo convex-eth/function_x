@@ -21,6 +21,7 @@ const PoolUtilities = artifacts.require("PoolUtilities");
 
 
 const IFxnGauge = artifacts.require("IFxnGauge");
+const IFxUsd = artifacts.require("IFxUsd");
 const IFxClaimer = artifacts.require("IFxClaimer");
 const IERC20 = artifacts.require("IERC20");
 const IGaugeController = artifacts.require("IGaugeController");
@@ -183,6 +184,15 @@ contract("staking platform", async accounts => {
       //get stakingToken
       var stakingToken = await pool.asset();
       console.log("stakingToken: " +stakingToken);
+
+      //check that we have sharing enabled
+      var sharecheck = await IFxUsd.at(stakingAddress);
+      var issharing = await sharecheck.hasRole("0x8d4998b5742dab4ffcf0a281dc749862b71ae54ba53b035bfb1d3dbc23ddc35d", contractList.system.voteProxy);
+      console.log("has sharing enabled? " +issharing);
+      if(!issharing){
+        console.log("NO SHARING, Skipping pool");
+        return;
+      }
   
       //add pool
       var tx = await booster.addPool(imp, pool.address, stakingToken, {from:deployer});
