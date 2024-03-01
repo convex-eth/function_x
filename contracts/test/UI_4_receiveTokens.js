@@ -192,6 +192,17 @@ contract("staking platform", async accounts => {
     await lptoken.transfer(actingUser, web3.utils.toWei(lpAmount, "ether"),{from:holder,gasPrice:0});
     var lpBalance = await lptoken.balanceOf(actingUser);
     console.log("lpBalance: " +lpBalance);
+
+
+    
+    console.log("transfer staked fx position actingUser...");
+    let stakedtoken = await IERC20.at("0xfEFafB9446d84A9e58a3A2f2DDDd7219E8c94FbB");
+    var holder = "0x1389388d01708118b497f59521f6943Be2541bb7";
+    let stakedAmount = "100.0"
+    await unlockAccount(holder);
+    await stakedtoken.transfer(actingUser, web3.utils.toWei(stakedAmount, "ether"),{from:holder,gasPrice:0});
+    var stakedBalance = await stakedtoken.balanceOf(actingUser);
+    console.log("staked token Balance: " +stakedBalance);
   });
 });
 
