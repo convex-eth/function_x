@@ -188,12 +188,14 @@ contract("staking platform", async accounts => {
     jsonfile.writeFileSync("./contracts.json", contractList, { spaces: 4 });
     console.log(contractList.system);
 
-    console.log("deployed");
+    
     await setNoGas();
-    await booster.setFeeToken(contractList.fxn.feeToken, contractList.fxn.vefxnRewardDistro, {from:deployer,gasPrice:0});
-    await booster.setFeeQueue(feeQueue.address,{from:deployer,gasPrice:0});
+    await booster.setFeeToken(contractList.fxn.feeToken, contractList.fxn.vefxnRewardDistro, {from:deployer});
+    await booster.setFeeQueue(feeQueue.address,{from:deployer});
     await booster.setPendingOwner(multisig,{from:deployer});
+    console.log("deployed");
 
+    // return;
 
     // ----   msig   ----
     console.log("old booster at: " +oldbooster.address);
@@ -212,7 +214,7 @@ contract("staking platform", async accounts => {
     /// ---- end msig ------
 
     //post txs
-    await booster.setPoolRewardImplementation(poolRewards.address,{from:deployer,gasPrice:0});
+    await booster.setPoolRewardImplementation(poolRewards.address,{from:deployer});
 
     
     
