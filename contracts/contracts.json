@@ -35,5 +35,79 @@
         "facet": "0xA5e2Ec4682a32605b9098Ddd7204fe84Ab932fE4",
         "converter": "0x11C907b3aeDbD863e551c37f21DD3F36b28A6784"
     },
-    "pools": []
+    "pools": [
+        {
+            "id": 0,
+            "implementation": "0xd6da2A43DeD6fC647AA5Fb526E96b1F37C24CEa8",
+            "stakingAddress": "0xc6dEe5913e010895F3702bc43a40d661B13a40BD",
+            "stakingToken": "0x53805A76E1f5ebbFE7115F16f9c87C2f7e633726",
+            "rewardsAddress": "0xB421D9aEA4c104cAdbaaE04B74a89a2369f4571B",
+            "name": "RebalancePool - fEth wsteth"
+        },
+        {
+            "id": 1,
+            "implementation": "0xd6da2A43DeD6fC647AA5Fb526E96b1F37C24CEa8",
+            "stakingAddress": "0xB87A8332dFb1C76Bb22477dCfEdDeB69865cA9f9",
+            "stakingToken": "0x53805A76E1f5ebbFE7115F16f9c87C2f7e633726",
+            "rewardsAddress": "0xEfC170C3B16F103D75283F61DDCC17351e0441b9",
+            "name": "RebalancePool - fEth xsteth"
+        },
+        {
+            "id": 2,
+            "implementation": "0xd6da2A43DeD6fC647AA5Fb526E96b1F37C24CEa8",
+            "stakingAddress": "0x9aD382b028e03977D446635Ba6b8492040F829b7",
+            "stakingToken": "0xD6B8162e2fb9F3EFf09bb8598ca0C8958E33A23D",
+            "rewardsAddress": "0x424426916b19A85430C0A95230cA59A081Af038c",
+            "name": "RebalancePool - fxusd wsteth"
+        },
+        {
+            "id": 3,
+            "implementation": "0xd6da2A43DeD6fC647AA5Fb526E96b1F37C24CEa8",
+            "stakingAddress": "0x0417CE2934899d7130229CDa39Db456Ff2332685",
+            "stakingToken": "0xD6B8162e2fb9F3EFf09bb8598ca0C8958E33A23D",
+            "rewardsAddress": "0x460c39A3D072a261e52A5a6066b7809906ebFAA3",
+            "name": "RebalancePool - fxusd xsteth"
+        },
+        {
+            "id": 4,
+            "implementation": "0xd6da2A43DeD6fC647AA5Fb526E96b1F37C24CEa8",
+            "stakingAddress": "0xb925F8CAA6BE0BFCd1A7383168D1c932D185A748",
+            "stakingToken": "0xa87F04c9743Fd1933F82bdDec9692e9D97673769",
+            "rewardsAddress": "0x2cbF95eECFe14812174CAA42E72b7ba6bcAf8701",
+            "name": "RebalancePool - fxusd sfrxeth"
+        },
+        {
+            "id": 5,
+            "implementation": "0xd6da2A43DeD6fC647AA5Fb526E96b1F37C24CEa8",
+            "stakingAddress": "0x4a2ab45D27428901E826db4a52Dae00594b68022",
+            "stakingToken": "0xa87F04c9743Fd1933F82bdDec9692e9D97673769",
+            "rewardsAddress": "0x550A2791b2465D1f6814F461Bb20D0fA1Cf682CD",
+            "name": "RebalancePool - fxusd xfrxeth"
+        },
+        {
+            "id": 6,
+            "implementation": "0x2aA80139D3D6dFA90396547228D3875a8Fdc0b04",
+            "stakingAddress": "0xA5250C540914E012E22e623275E290c4dC993D11",
+            "stakingToken": "0xE06A65e09Ae18096B99770A809BA175FA05960e2",
+            "rewardsAddress": "0x82A128C9D45b72632A4Ec91664C96A083249D502",
+            "name": "CurveConvex LP - Fxn/Eth"
+        },
+        {
+            "id": 7,
+            "implementation": "0x2aA80139D3D6dFA90396547228D3875a8Fdc0b04",
+            "stakingAddress": "0xfEFafB9446d84A9e58a3A2f2DDDd7219E8c94FbB",
+            "stakingToken": "0x1062FD8eD633c1f080754c19317cb3912810B5e5",
+            "rewardsAddress": "0x0129e26a1Be15f02f23d0250007Deb92e344c137",
+            "name": "CurveConvex LP - cvxFxn/Fxn"
+        },
+        {
+            "id": 8,
+            "implementation": "0x2aA80139D3D6dFA90396547228D3875a8Fdc0b04",
+            "stakingAddress": "0x5b1D12365BEc01b8b672eE45912d1bbc86305dba",
+            "stakingToken": "0x28Ca243dc0aC075dD012fCf9375C25D18A844d96",
+            "rewardsAddress": "0x729c84b794776f59f6ACC38Be1700fed2c2f6329",
+            "name": "CurveConvex LP - sdFxn/Fxn"
+        }
+
+    ]
 }
