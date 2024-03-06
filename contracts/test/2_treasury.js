@@ -7,34 +7,23 @@ const Booster = artifacts.require("Booster");
 const FxnDepositor = artifacts.require("FxnDepositor");
 const IERC20 = artifacts.require("IERC20");
 const TreasuryManager = artifacts.require("TreasuryManager");
+const TreasuryManagerFxGauge = artifacts.require("TreasuryManagerFxGauge");
 const IConvexDeposits = artifacts.require("IConvexDeposits");
+const IConvexTreasuryRegistry = artifacts.require("IConvexTreasuryRegistry");
+const IFxnGauge = artifacts.require("IFxnGauge");
+const IFxnTokenMinter = artifacts.require("IFxnTokenMinter");
 
-// const unlockAccount = async (address) => {
-//   return new Promise((resolve, reject) => {
-//     web3.currentProvider.send(
-//       {
-//         jsonrpc: "2.0",
-//         method: "evm_unlockUnknownAccount",
-//         params: [address],
-//         id: new Date().getTime(),
-//       },
-//       (err, result) => {
-//         if (err) {
-//           return reject(err);
-//         }
-//         return resolve(result);
-//       }
-//     );
-//   });
-// };
-
-const addAccount = async (address) => {
+const unlockAccount = async (address) => {
+  let NETWORK = config.network;
+  if(!NETWORK.includes("debug")){
+    return null;
+  }
   return new Promise((resolve, reject) => {
     web3.currentProvider.send(
       {
         jsonrpc: "2.0",
-        method: "evm_addAccount",
-        params: [address, "passphrase"],
+        method: "hardhat_impersonateAccount",
+        params: [address],
         id: new Date().getTime(),
       },
       (err, result) => {
@@ -47,14 +36,17 @@ const addAccount = async (address) => {
   });
 };
 
-const unlockAccount = async (address) => {
-  await addAccount(address);
+const setNoGas = async () => {
+  let NETWORK = config.network;
+  if(!NETWORK.includes("debug")){
+    return null;
+  }
   return new Promise((resolve, reject) => {
     web3.currentProvider.send(
       {
         jsonrpc: "2.0",
-        method: "personal_unlockAccount",
-        params: [address, "passphrase"],
+        method: "hardhat_setNextBlockBaseFeePerGas",
+        params: ["0x0"],
         id: new Date().getTime(),
       },
       (err, result) => {
@@ -145,8 +137,6 @@ contract("Test swapping/converting/lping and other actions for treasury", async 
     userNames[userZ] = "Z";
 
     const advanceTime = async (secondsElaspse) => {
-      // await time.increase(secondsElaspse);
-      // await time.advanceBlock();
       await fastForward(secondsElaspse);
       console.log("\n  >>>>  advance time " +(secondsElaspse/86400) +" days  >>>>\n");
     }
@@ -156,15 +146,33 @@ contract("Test swapping/converting/lping and other actions for treasury", async 
     await unlockAccount(multisig);
     await unlockAccount(treasury);
 
-    let manager = await TreasuryManager.new({from:deployer});
+
+    var tregistry = await IConvexTreasuryRegistry.at(contractList.system.treasuryRegistry);
+
+    // let manager = await TreasuryManager.new({from:deployer});
+    // let manager = await TreasuryManagerFxGauge.new({from:deployer});
     // let manager = await TreasuryManager.at(contractList.system.treasuryManager);
+    let manager = await TreasuryManagerFxGauge.at(contractList.system.treasuryManager);
     console.log("manager: " +manager.address)
+    console.log("vault: " +(await manager.vault()))
+
+    var add = await tregistry.contract.methods.addToRegistry(manager.address).encodeABI();
+    var remove = await tregistry.contract.methods.removeFromRegistry(4).encodeABI();
+    console.log("add: " +add)
+    console.log("remove: " +remove)
 
     var fxnApprove = fxn.contract.methods.approve(manager.address,"115792089237316195423570985008687907853269984665640564039457584007913129639935").encodeABI();
-    var cvxfxnApprove = cvxfxn.contract.methods.approve(manager.address,"115792089237316195423570985008687907853269984665640564039457584007913129639935").encodeABI();
-    console.log("fxn calldata: " +fxnApprove);
-    console.log("cvxfxn calldata: " +cvxfxnApprove);
+    var cvxfxnApprove = cvxfxn.contract.methods.approve("0x148e58bB8d9c5278b6505b40923e6152B5238Cf8","0").encodeABI();
+    console.log("approve calldata: " +fxnApprove);
+    console.log("remove calldata: " +cvxfxnApprove);
 
+    var gauge = await IFxnGauge.at("0xfEFafB9446d84A9e58a3A2f2DDDd7219E8c94FbB");
+    var claim = gauge.contract.methods.claim().encodeABI();
+    console.log("claim: " +claim);
+
+    var minter = await IFxnTokenMinter.at(contractList.fxn.tokenMinter);
+    var mint = minter.contract.methods.mint(gauge.address).encodeABI();
+    console.log("mint: "+mint);
     // return;
 
 
@@ -224,12 +232,14 @@ contract("Test swapping/converting/lping and other actions for treasury", async 
 
     await manager.addToPool(amountfxn, amountcvxfxn, minOut,{from:deployer});
 
-    var lprewards = await IERC20.at(await manager.lprewards());
+    // var lprewards = await IERC20.at(await manager.lprewards());
+    var lprewards = await IERC20.at(await manager.fxgauge());
+    var vault = await manager.vault();
     console.log("lp rewards at: " +lprewards.address);
 
     await fxn.balanceOf(treasury).then(a=>console.log("treasury fxn: " +a));
     await cvxfxn.balanceOf(treasury).then(a=>console.log("treasury cvxfxn: " +a));
-    await lprewards.balanceOf(manager.address).then(a=>console.log("staked lp: " +a));
+    await lprewards.balanceOf(vault).then(a=>console.log("staked lp: " +a));
 
     console.log("\n\n >>> Add LP END>>>>");
 
@@ -247,7 +257,7 @@ contract("Test swapping/converting/lping and other actions for treasury", async 
     await crv.balanceOf(manager.address).then(a=>console.log("manager crv: " +a));
     await cvxCrv.balanceOf(manager.address).then(a=>console.log("manager cvxCrv: " +a));
 
-    var lpbal = await lprewards.balanceOf(manager.address);
+    var lpbal = await lprewards.balanceOf(vault);
     console.log("remove LP: " +lpbal);
     var minOut = await manager.calc_withdraw_one_coin(lpbal);
     console.log("minOut: " +minOut);
@@ -281,12 +291,13 @@ contract("Test swapping/converting/lping and other actions for treasury", async 
 
     await manager.addToPool(amountfxn, amountcvxfxn, minOut,{from:deployer});
 
-    var lprewards = await IERC20.at(await manager.lprewards());
+    // var lprewards = await IERC20.at(await manager.lprewards());
+    // var lprewards = await IERC20.at(await manager.fxgauge());
     console.log("lp rewards at: " +lprewards.address);
 
     await fxn.balanceOf(treasury).then(a=>console.log("treasury fxn: " +a));
     await cvxfxn.balanceOf(treasury).then(a=>console.log("treasury cvxfxn: " +a));
-    await lprewards.balanceOf(manager.address).then(a=>console.log("staked lp: " +a));
+    await lprewards.balanceOf(vault).then(a=>console.log("staked lp: " +a));
 
     console.log("\n\n >>> Add LP END 2>>>>");
 
@@ -330,7 +341,7 @@ contract("Test swapping/converting/lping and other actions for treasury", async 
     await cvxCrv.balanceOf(manager.address).then(a=>console.log("manager cvxCrv: " +a));
     await lptoken.balanceOf(manager.address).then(a=>console.log("manager lptoken: " +a));
 
-    var lpbal = await lprewards.balanceOf(manager.address);
+    var lpbal = await lprewards.balanceOf(vault);
     console.log("remove LP: " +lpbal);
     // var minOut = await manager.calc_withdraw_one_coin(lpbal);
     // console.log("minOut: " +minOut);

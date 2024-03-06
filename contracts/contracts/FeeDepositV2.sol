@@ -72,7 +72,7 @@ contract FeeDepositV2 {
     }
 
     function cvxfxnIncentive() external view returns(uint256){
-        return denominator - platformIncentive;
+        return denominator - platformIncentive - vlcvxIncentive;
     }
 
     function setPlatformReceiver(address _receiver, bool _requireProcess) external onlyOwner{

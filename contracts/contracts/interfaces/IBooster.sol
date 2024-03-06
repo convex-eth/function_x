@@ -10,4 +10,6 @@ interface IBooster {
    function rewardManager() external returns(address);
    function isShutdown() external returns(bool);
    function claimFees() external;
+   function claimBoostFees() external;
+   function createVault(uint256 _pid) external returns (address);
 }
