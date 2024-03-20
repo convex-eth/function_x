@@ -168,6 +168,7 @@ contract("staking platform", async accounts => {
     let vault_erc = await StakingProxyERC20.at(contractList.system.vault_erc);
     let vault_rebalance = await StakingProxyRebalancePool.at(contractList.system.vault_rebalance);
     let poolReg = await PoolRegistry.at(contractList.system.poolReg);
+    let feeReg = await FeeRegistry.at(contractList.system.feeReg);
 
     console.log("\n\ncreate pools...");
 
@@ -247,17 +248,27 @@ contract("staking platform", async accounts => {
     }
 
     //rebalance pools
-    await deployRebalancePool("0xc6dEe5913e010895F3702bc43a40d661B13a40BD", "RebalancePool - fEth wsteth");
-    await deployRebalancePool("0xB87A8332dFb1C76Bb22477dCfEdDeB69865cA9f9", "RebalancePool - fEth xsteth");
-    await deployRebalancePool("0x9aD382b028e03977D446635Ba6b8492040F829b7", "RebalancePool - fxusd wsteth");
-    await deployRebalancePool("0x0417CE2934899d7130229CDa39Db456Ff2332685", "RebalancePool - fxusd xsteth");
-    await deployRebalancePool("0xb925F8CAA6BE0BFCd1A7383168D1c932D185A748", "RebalancePool - fxusd sfrxeth");
-    await deployRebalancePool("0x4a2ab45D27428901E826db4a52Dae00594b68022", "RebalancePool - fxusd xfrxeth");
+    // await deployRebalancePool("0xc6dEe5913e010895F3702bc43a40d661B13a40BD", "RebalancePool - fEth wsteth");
+    // await deployRebalancePool("0xB87A8332dFb1C76Bb22477dCfEdDeB69865cA9f9", "RebalancePool - fEth xsteth");
+    // await deployRebalancePool("0x9aD382b028e03977D446635Ba6b8492040F829b7", "RebalancePool - fxusd wsteth");
+    // await deployRebalancePool("0x0417CE2934899d7130229CDa39Db456Ff2332685", "RebalancePool - fxusd xsteth");
+    // await deployRebalancePool("0xb925F8CAA6BE0BFCd1A7383168D1c932D185A748", "RebalancePool - fxusd sfrxeth");
+    // await deployRebalancePool("0x4a2ab45D27428901E826db4a52Dae00594b68022", "RebalancePool - fxusd xfrxeth");
 
-    //lps
-    await deployERC20Pool("0xA5250C540914E012E22e623275E290c4dC993D11", "CurveConvex LP - Fxn/Eth");
-    await deployERC20Pool("0xfEFafB9446d84A9e58a3A2f2DDDd7219E8c94FbB", "CurveConvex LP - cvxFxn/Fxn");
-    await deployERC20Pool("0x5b1D12365BEc01b8b672eE45912d1bbc86305dba", "CurveConvex LP - sdFxn/Fxn");
+    // //lps
+    // await deployERC20Pool("0xA5250C540914E012E22e623275E290c4dC993D11", "CurveConvex LP - Fxn/Eth");
+    // await deployERC20Pool("0xfEFafB9446d84A9e58a3A2f2DDDd7219E8c94FbB", "CurveConvex LP - cvxFxn/Fxn");
+    // await deployERC20Pool("0x5b1D12365BEc01b8b672eE45912d1bbc86305dba", "CurveConvex LP - sdFxn/Fxn");
+    
+
+    await deployERC20Pool("0xF4Bd6D66bAFEA1E0500536d52236f64c3e8a2a84", "CurveConvex LP - crvUSD/fxUSD");
+    await deployERC20Pool("0xeD113B925AC3f972161Be012cdFEE33470040E6a", "CurveConvex LP - pyUSD/fxUSD");
+    await deployERC20Pool("0x61F32964C39Cca4353144A6DB2F8Efdb3216b35B", "CurveConvex LP - Dola/fxUSD");
+    await deployERC20Pool("0xfa4761512aaf899b010438a10C60D01EBdc0eFcA", "CurveConvex LP - Grai/fxUSD");
+    await deployERC20Pool("0x31b630B21065664dDd2dBa0eD3a60D8ff59501F0", "CurveConvex LP - Frax/fxUSD");
+    await deployERC20Pool("0xf0A3ECed42Dbd8353569639c0eaa833857aA0A75", "CurveConvex LP - GHO/fxUSD");
+    await deployERC20Pool("0xDbA9a415bae1983a945ba078150CAe8b690c9229", "CurveConvex LP - mkUSD/fxUSD");
+    await deployERC20Pool("0x0d3e9A29E856CF00d670368a7ab0512cb0c29FAC", "CurveConvex LP - ULTRA/fxUSD");
 
 
     console.log("data:");

@@ -210,10 +210,9 @@ contract("staking platform", async accounts => {
     await advanceTime(day);
 
     console.log("\n\ncreate new pool...");
-    let pool = "0x1062fd8ed633c1f080754c19317cb3912810b5e5";
-    let lptoken = await IERC20.at("0x1062fd8ed633c1f080754c19317cb3912810b5e5");
-    // let gauge = await MockGauge.new(lptoken.address,{from:deployer});
-    let gauge = await IFxnGauge.at("0xfEFafB9446d84A9e58a3A2f2DDDd7219E8c94FbB");
+    let pool = "0xd6982da59F1D26476E259559508f4135135cf9b8";
+    let lptoken = await IERC20.at("0xd6982da59F1D26476E259559508f4135135cf9b8");
+    let gauge = await IFxnGauge.at("0xeD113B925AC3f972161Be012cdFEE33470040E6a");
 
     console.log("pool token: " +lptoken.address);
     console.log("gauge address: " +gauge.address);
@@ -236,7 +235,7 @@ contract("staking platform", async accounts => {
 
 
     console.log("transfer lp tokens to actingUser...");
-    let holder = "0x724476f141ED2DE4DA22eBDF435905dEf1118317";
+    let holder = "0xAAc0aa431c237C2C0B5f041c8e59B3f1a43aC78F";
     let depositAmount = "1000.0"
     await unlockAccount(holder);
     await lptoken.transfer(actingUser, web3.utils.toWei(depositAmount, "ether"),{from:holder,gasPrice:0});
@@ -267,7 +266,8 @@ contract("staking platform", async accounts => {
 
     await lptoken.approve(vault.address, web3.utils.toWei("1000000000.0","ether"),{from:actingUser});
     console.log("approved");
-    var tx = await vault.deposit(web3.utils.toWei(depositAmount,"ether"), {from:actingUser});
+    // var tx = await vault.deposit(web3.utils.toWei(depositAmount,"ether"), {from:actingUser});
+    var tx = await vault.methods['deposit(uint256,bool)'](web3.utils.toWei(depositAmount,"ether"), false, {from:actingUser});
     console.log("staked, gas: " +tx.receipt.gasUsed);
 
     await gauge.balanceOf(vault.address).then(a=>console.log("gauge balance of vault: " +a));
@@ -278,7 +278,7 @@ contract("staking platform", async accounts => {
     await gauge.sharedBalanceOf(vault.address).then(a=>console.log("sharedBalanceOf vault: " +a));
     await gauge.workingBalanceOf(voteproxy.address).then(a=>console.log("workingBalanceOf voteproxy: " +a));
     await gauge.sharedBalanceOf(voteproxy.address).then(a=>console.log("sharedBalanceOf voteproxy: " +a));
-    await poolUtil.workingBalance(gauge.address).then(a=>console.log("working balance via pool util: " +a));
+    await poolUtil.gaugeWorkingBalance(gauge.address).then(a=>console.log("working balance via pool util: " +a));
     await poolUtil.poolBoostRatioById(poolid).then(a=>console.log("boost rate from util: " +a));
 
     console.log("check reward rates...");
