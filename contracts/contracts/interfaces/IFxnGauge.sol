@@ -10,6 +10,7 @@ interface IFxnGauge{
     function workingBalanceOf(address _account) external view returns(uint256);
     function deposit(uint256 _amount) external;
     function deposit(uint256 _amount, address _receiver) external;
+    function deposit(uint256 _amount, address _receiver, bool _manage) external;
     function withdraw(uint256 _amount) external;
     function withdraw(uint256 _amount, address _receiver) external;
     function user_checkpoint(address _account) external returns (bool);

@@ -54,6 +54,21 @@ contract StakingProxyERC20 is StakingProxyBase, ReentrancyGuard{
         _checkpointRewards();
     }
 
+    //deposit into gauge with manage flag
+    function deposit(uint256 _amount, bool _manage) external onlyOwner nonReentrant{
+        if(_amount > 0){
+            //pull tokens from user
+            address _stakingToken = stakingToken;
+            IERC20(_stakingToken).safeTransferFrom(msg.sender, address(this), _amount);
+
+            //stake (use balanceof in case of change during transfer)
+            IFxnGauge(gaugeAddress).deposit(IERC20(_stakingToken).balanceOf(address(this)), address(this), _manage);
+        }
+        
+        //checkpoint rewards
+        _checkpointRewards();
+    }
+
 
     //withdraw a staked position
     function withdraw(uint256 _amount) external onlyOwner nonReentrant{

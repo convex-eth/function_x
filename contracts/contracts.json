@@ -20,7 +20,8 @@
         "feeReg": "0x4f258feCc91b2ff162cA702c2Bd9ABf2AF089611",
         "poolReg": "0xdB95d646012bB87aC2E6CD63eAb2C42323c1F5AF",
         "poolRewards": "0x4dbE7F8e2EADE56A3B511cBD1AE6ADC9Fe889282",
-        "vault_erc": "0x2aA80139D3D6dFA90396547228D3875a8Fdc0b04",
+        "vault_erc": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+        "vault_erc_v1": "0x2aA80139D3D6dFA90396547228D3875a8Fdc0b04",
         "vault_rebalance": "0xd6da2A43DeD6fC647AA5Fb526E96b1F37C24CEa8",
         "poolUtility": "0xcc8bbA630037D147Cb5b128755a0e8158eb1E65a"
     },
