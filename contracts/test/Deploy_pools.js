@@ -170,12 +170,20 @@ contract("Deploy Pools", async accounts => {
     let poolReg = await PoolRegistry.at(contractList.system.poolReg);
     let feeReg = await FeeRegistry.at(contractList.system.feeReg);
 
+    // var rusd = "0x65D72AA8DA931F047169112fcf34f52DbaAE7D18"
+    // var newimp = await StakingProxyRebalancePool.new(poolReg.address, feeReg.address, contractList.fxn.tokenMinter, rusd, {from:deployer});
+    // console.log("newimp " +newimp.address);
+    // return;
+
     console.log("\n\ncreate pools...");
 
     var deployedData = [];
 
-    const deployRebalancePool = async (stakingAddress, targetname) => {
+    const deployRebalancePool = async (stakingAddress, targetname, usdtype) => {
       var imp = vault_rebalance.address;
+      if(usdtype=="rusd"){
+        imp = contractList.system.vault_rebalance_rusd;
+      }
       console.log("\n----- Deploy Rebalance Pool ------\n");
       console.log("name: " +targetname);
       console.log("imp: " +imp);
@@ -270,8 +278,8 @@ contract("Deploy Pools", async accounts => {
     // await deployERC20Pool("0xDbA9a415bae1983a945ba078150CAe8b690c9229", "CurveConvex LP - mkUSD/fxUSD");
     // await deployERC20Pool("0x0d3e9A29E856CF00d670368a7ab0512cb0c29FAC", "CurveConvex LP - ULTRA/fxUSD");
 
-    await deployRebalancePool("0xc2DeF1E39FF35367F2F2a312a793477C576fD4c3", "RebalancePool - rUSD weETH");
-    await deployRebalancePool("0x7EB0ed173480299e1310d55E04Ece401c2B06626", "RebalancePool - rUSD xeETH");
+    await deployRebalancePool("0xc2DeF1E39FF35367F2F2a312a793477C576fD4c3", "RebalancePool - rUSD weETH","rusd");
+    await deployRebalancePool("0x7EB0ed173480299e1310d55E04Ece401c2B06626", "RebalancePool - rUSD xeETH","rusd");
 
 
     console.log("data:");

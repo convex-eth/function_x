@@ -17,10 +17,11 @@ Thus automatic redirect must be turned off and processed locally from the vault.
 contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
     using SafeERC20 for IERC20;
 
-    address public constant fxusd = address(0x085780639CC2cACd35E474e71f4d000e2405d8f6); 
+    address public immutable fxusd; 
 
-    constructor(address _poolRegistry, address _feeRegistry, address _fxnminter) 
+    constructor(address _poolRegistry, address _feeRegistry, address _fxnminter, address _fxusd) 
         StakingProxyBase(_poolRegistry, _feeRegistry, _fxnminter){
+        fxusd = _fxusd;
     }
 
     //vault type

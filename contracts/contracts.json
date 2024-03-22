@@ -23,6 +23,7 @@
         "vault_erc": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
         "vault_erc_v1": "0x2aA80139D3D6dFA90396547228D3875a8Fdc0b04",
         "vault_rebalance": "0xd6da2A43DeD6fC647AA5Fb526E96b1F37C24CEa8",
+        "vault_rebalance_rusd": "0x54eAdF1f41F0F9CeF9f3BFD721C0aCe8cf5a9266",
         "poolUtility": "0xcc8bbA630037D147Cb5b128755a0e8158eb1E65a"
     },
     "fxn": {
@@ -180,7 +181,8 @@
             "stakingAddress": "0xc2DeF1E39FF35367F2F2a312a793477C576fD4c3",
             "stakingToken": "0x9216272158F563488FfC36AFB877acA2F265C560",
             "rewardsAddress": "0x630AF26C6324A28a50eb92c3f07BEeb862812236",
-            "name": "RebalancePool - rUSD weETH"
+            "name": "RebalancePool - rUSD weETH",
+            "active": 0
         },
         {
             "id": 18,
@@ -188,8 +190,24 @@
             "stakingAddress": "0x7EB0ed173480299e1310d55E04Ece401c2B06626",
             "stakingToken": "0x9216272158F563488FfC36AFB877acA2F265C560",
             "rewardsAddress": "0x663e9F0F4fE10663C35e10DB6D09677B9DeF2BBf",
+            "name": "RebalancePool - rUSD xeETH",
+            "active": 0
+        },
+        {
+            "id": 19,
+            "implementation": "0x54eAdF1f41F0F9CeF9f3BFD721C0aCe8cf5a9266",
+            "stakingAddress": "0xc2DeF1E39FF35367F2F2a312a793477C576fD4c3",
+            "stakingToken": "0x9216272158F563488FfC36AFB877acA2F265C560",
+            "rewardsAddress": "0x3eFfe801CFfc1401C0A6793050D0Cf4736B4bdBe",
+            "name": "RebalancePool - rUSD weETH"
+        },
+        {
+            "id": 20,
+            "implementation": "0x54eAdF1f41F0F9CeF9f3BFD721C0aCe8cf5a9266",
+            "stakingAddress": "0x7EB0ed173480299e1310d55E04Ece401c2B06626",
+            "stakingToken": "0x9216272158F563488FfC36AFB877acA2F265C560",
+            "rewardsAddress": "0x5E208302e4B70DEC50FBf19DeDaCF3a13D6A3489",
             "name": "RebalancePool - rUSD xeETH"
         }
-
     ]
 }
