@@ -120,7 +120,7 @@ const fastForward = async seconds => {
   await mineBlock();
 };
 
-contract("staking platform", async accounts => {
+contract("Deploy Pools", async accounts => {
   it("should successfully run", async () => {
     
     let deployer = contractList.system.deployer;
@@ -261,14 +261,17 @@ contract("staking platform", async accounts => {
     // await deployERC20Pool("0x5b1D12365BEc01b8b672eE45912d1bbc86305dba", "CurveConvex LP - sdFxn/Fxn");
     
 
-    await deployERC20Pool("0xF4Bd6D66bAFEA1E0500536d52236f64c3e8a2a84", "CurveConvex LP - crvUSD/fxUSD");
-    await deployERC20Pool("0xeD113B925AC3f972161Be012cdFEE33470040E6a", "CurveConvex LP - pyUSD/fxUSD");
-    await deployERC20Pool("0x61F32964C39Cca4353144A6DB2F8Efdb3216b35B", "CurveConvex LP - Dola/fxUSD");
-    await deployERC20Pool("0xfa4761512aaf899b010438a10C60D01EBdc0eFcA", "CurveConvex LP - Grai/fxUSD");
-    await deployERC20Pool("0x31b630B21065664dDd2dBa0eD3a60D8ff59501F0", "CurveConvex LP - Frax/fxUSD");
-    await deployERC20Pool("0xf0A3ECed42Dbd8353569639c0eaa833857aA0A75", "CurveConvex LP - GHO/fxUSD");
-    await deployERC20Pool("0xDbA9a415bae1983a945ba078150CAe8b690c9229", "CurveConvex LP - mkUSD/fxUSD");
-    await deployERC20Pool("0x0d3e9A29E856CF00d670368a7ab0512cb0c29FAC", "CurveConvex LP - ULTRA/fxUSD");
+    // await deployERC20Pool("0xF4Bd6D66bAFEA1E0500536d52236f64c3e8a2a84", "CurveConvex LP - crvUSD/fxUSD");
+    // await deployERC20Pool("0xeD113B925AC3f972161Be012cdFEE33470040E6a", "CurveConvex LP - pyUSD/fxUSD");
+    // await deployERC20Pool("0x61F32964C39Cca4353144A6DB2F8Efdb3216b35B", "CurveConvex LP - Dola/fxUSD");
+    // await deployERC20Pool("0xfa4761512aaf899b010438a10C60D01EBdc0eFcA", "CurveConvex LP - Grai/fxUSD");
+    // await deployERC20Pool("0x31b630B21065664dDd2dBa0eD3a60D8ff59501F0", "CurveConvex LP - Frax/fxUSD");
+    // await deployERC20Pool("0xf0A3ECed42Dbd8353569639c0eaa833857aA0A75", "CurveConvex LP - GHO/fxUSD");
+    // await deployERC20Pool("0xDbA9a415bae1983a945ba078150CAe8b690c9229", "CurveConvex LP - mkUSD/fxUSD");
+    // await deployERC20Pool("0x0d3e9A29E856CF00d670368a7ab0512cb0c29FAC", "CurveConvex LP - ULTRA/fxUSD");
+
+    await deployRebalancePool("0xc2DeF1E39FF35367F2F2a312a793477C576fD4c3", "RebalancePool - rUSD weETH");
+    await deployRebalancePool("0x7EB0ed173480299e1310d55E04Ece401c2B06626", "RebalancePool - rUSD xeETH");
 
 
     console.log("data:");

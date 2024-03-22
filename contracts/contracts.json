@@ -173,6 +173,23 @@
             "stakingToken": "0xF33aB11E5C4e55DAcB13644f0C0A9d1e199A796F",
             "rewardsAddress": "0x03216aE4659F4438696959aAc7b29Ac5E084fc9F",
             "name": "CurveConvex LP - ULTRA/fxUSD"
+        },
+        {
+            "id": 17,
+            "implementation": "0xd6da2A43DeD6fC647AA5Fb526E96b1F37C24CEa8",
+            "stakingAddress": "0xc2DeF1E39FF35367F2F2a312a793477C576fD4c3",
+            "stakingToken": "0x9216272158F563488FfC36AFB877acA2F265C560",
+            "rewardsAddress": "0x630AF26C6324A28a50eb92c3f07BEeb862812236",
+            "name": "RebalancePool - rUSD weETH"
+        },
+        {
+            "id": 18,
+            "implementation": "0xd6da2A43DeD6fC647AA5Fb526E96b1F37C24CEa8",
+            "stakingAddress": "0x7EB0ed173480299e1310d55E04Ece401c2B06626",
+            "stakingToken": "0x9216272158F563488FfC36AFB877acA2F265C560",
+            "rewardsAddress": "0x663e9F0F4fE10663C35e10DB6D09677B9DeF2BBf",
+            "name": "RebalancePool - rUSD xeETH"
         }
+
     ]
 }
