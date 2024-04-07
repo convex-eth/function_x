@@ -208,6 +208,38 @@
             "stakingToken": "0x9216272158F563488FfC36AFB877acA2F265C560",
             "rewardsAddress": "0x5E208302e4B70DEC50FBf19DeDaCF3a13D6A3489",
             "name": "RebalancePool - rUSD xeETH"
+        },
+        {
+            "id": 21,
+            "implementation": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+            "stakingAddress": "0x697DDb8e742047561C8e4bB69d2DDB1b8Bb42b60",
+            "stakingToken": "0x2116BFaD62b383043230501f6a124c6EA60CcfA5",
+            "rewardsAddress": "0xA42538e6208BD32223BeaC8ed5EC893586a47aE9",
+            "name": "CurveConvex LP - fxUSD/rUSD"
+        },
+        {
+            "id": 22,
+            "implementation": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+            "stakingAddress": "0x9c7003bC16F2A1AA47451C858FEe6480B755363e",
+            "stakingToken": "0x27cB9629aE3Ee05cb266B99cA4124EC999303c9D",
+            "rewardsAddress": "0x7b6D65931B58dF9C8408a037eA4b0E09bf6ea3D5",
+            "name": "CurveConvex LP - alUSD/fxUSD"
+        },
+        {
+            "id": 23,
+            "implementation": "0x54eAdF1f41F0F9CeF9f3BFD721C0aCe8cf5a9266",
+            "stakingAddress": "0xf58c499417e36714e99803Cb135f507a95ae7169",
+            "stakingToken": "0x50B4DC15b34E31671c9cA40F9eb05D7eBd6b13f9",
+            "rewardsAddress": "0xe900092b4C2CDce6b50A66df166811c877CC5F47",
+            "name": "RebalancePool - rUSD wezETH"
+        },
+        {
+            "id": 24,
+            "implementation": "0x54eAdF1f41F0F9CeF9f3BFD721C0aCe8cf5a9266",
+            "stakingAddress": "0xBa947cba270D30967369Bf1f73884Be2533d7bDB",
+            "stakingToken": "0x50B4DC15b34E31671c9cA40F9eb05D7eBd6b13f9",
+            "rewardsAddress": "0x11112fff54c8389413ed082625c2ab16b2C86fcD",
+            "name": "RebalancePool - rUSD xezETH"
         }
     ]
 }
