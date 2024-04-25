@@ -24,6 +24,7 @@
         "vault_erc_v1": "0x2aA80139D3D6dFA90396547228D3875a8Fdc0b04",
         "vault_rebalance": "0xd6da2A43DeD6fC647AA5Fb526E96b1F37C24CEa8",
         "vault_rebalance_rusd": "0x54eAdF1f41F0F9CeF9f3BFD721C0aCe8cf5a9266",
+        "vault_rebalance_btcusd": "0xDB1A3E4B18D445EB09f9eD4cdd3DcF38534B9D7b",
         "poolUtility": "0xcc8bbA630037D147Cb5b128755a0e8158eb1E65a"
     },
     "fxn": {
@@ -35,6 +36,8 @@
         "gaugeController": "0xe60eB8098B34eD775ac44B1ddE864e098C6d7f37",
         "tokenMinter": "0xC8b194925D55d5dE9555AD1db74c149329F71DeF",
         "fxusd": "0x085780639CC2cACd35E474e71f4d000e2405d8f6",
+        "rusd": "0x65D72AA8DA931F047169112fcf34f52DbaAE7D18",
+        "btcusd": "0x9D11ab23d33aD026C466CE3c124928fDb69Ba20E",
         "facet": "0xA5e2Ec4682a32605b9098Ddd7204fe84Ab932fE4",
         "converter": "0x11C907b3aeDbD863e551c37f21DD3F36b28A6784"
     },
@@ -240,6 +243,22 @@
             "stakingToken": "0x50B4DC15b34E31671c9cA40F9eb05D7eBd6b13f9",
             "rewardsAddress": "0x11112fff54c8389413ed082625c2ab16b2C86fcD",
             "name": "RebalancePool - rUSD xezETH"
+        },
+        {
+            "id": 25,
+            "implementation": "0xDB1A3E4B18D445EB09f9eD4cdd3DcF38534B9D7b",
+            "stakingAddress": "0xf291EC9C2F87A41386fd94eC4BCdC3270eD04482",
+            "stakingToken": "0x576b4779727F5998577bb4e25bf726abE742b9F7",
+            "rewardsAddress": "0xff739CBc8e152D510385f2E41aA5a09Aef4F62e5",
+            "name": "RebalancePool - btcUSD wbtc"
+        },
+        {
+            "id": 26,
+            "implementation": "0xDB1A3E4B18D445EB09f9eD4cdd3DcF38534B9D7b",
+            "stakingAddress": "0xBB549046497364A1E26F94f7e93685Dc29FAd8c0",
+            "stakingToken": "0x576b4779727F5998577bb4e25bf726abE742b9F7",
+            "rewardsAddress": "0x0127540ab130095FcFd99583F260512B8e8cbeE6",
+            "name": "RebalancePool - btcUSD xwbtc"
         }
     ]
 }

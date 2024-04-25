@@ -22,7 +22,6 @@ interface IFxUsd{
         uint256 _minOut
       ) external returns (uint256 _amountOut);
 
-
     function earn(
         address _pool,
         uint256 _amount,
@@ -35,6 +34,13 @@ interface IFxUsd{
         address _receiver,
         uint256 _minOut
       ) external returns (uint256 _amountOut);
+
+    function redeemFrom(
+        address _pool,
+        uint256 _amountIn,
+        address _receiver,
+        uint256 _minOut
+      ) external returns (uint256 _amountOut, uint256 _bonusOut);
 
     function hasRole(bytes32 role, address account) external view returns (bool);
 }

@@ -31,7 +31,7 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
 
     //vault version
     function vaultVersion() external pure override returns(uint256){
-        return 1;
+        return 2;
     }
 
     //initialize vault
@@ -112,15 +112,10 @@ contract StakingProxyRebalancePool is StakingProxyBase, ReentrancyGuard{
     }
 
     //withdraw from rebalance pool(v2) and return underlying base
-    function withdrawAsBase(uint256 _amount, address _fxfacet, address _fxconverter) external onlyOwner nonReentrant{
+    function withdrawAsBase(uint256 _amount, uint256 _minOut) external onlyOwner nonReentrant{
 
-        //withdraw from rebase pool as underlying
-        IFxFacetV2.ConvertOutParams memory params = IFxFacetV2.ConvertOutParams(_fxconverter,0,new uint256[](0));
-        IFxFacetV2(_fxfacet).fxRebalancePoolWithdrawAs(params, gaugeAddress, _amount);
-
-        //return left over
-        address _baseToken = IFxnGauge(gaugeAddress).baseToken();
-        IERC20(_baseToken).safeTransfer(msg.sender, IERC20(_baseToken).balanceOf(address(this)) );
+        //redeemFrom
+        IFxUsd(fxusd).redeemFrom(gaugeAddress, _amount, msg.sender, _minOut);
 
         //checkpoint rewards
         _checkpointRewards();
