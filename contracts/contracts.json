@@ -259,6 +259,30 @@
             "stakingToken": "0x576b4779727F5998577bb4e25bf726abE742b9F7",
             "rewardsAddress": "0x0127540ab130095FcFd99583F260512B8e8cbeE6",
             "name": "RebalancePool - btcUSD xwbtc"
+        },
+        {
+            "id": 27,
+            "implementation": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+            "stakingAddress": "0xDF7fbDBAE50C7931a11765FAEd9fe1A002605B55",
+            "stakingToken": "0xD7Bf9bb6Bd088317Effd116E2B70ea3A054cBceb",
+            "rewardsAddress": "0x54eCC86886374dfD4006790c2a57958A436CC6A6",
+            "name": "CurveConvex LP - MIM/fxUSD"
+        },
+        {
+            "id": 28,
+            "implementation": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+            "stakingAddress": "0x4CA79F4FE25BCD329445CDBE7E065427ACa98380",
+            "stakingToken": "0x6fC7eA6CA8Cd2759803eb78159C931a8FF5E0557",
+            "rewardsAddress": "0xF76a7f38E3683d0d3137CAc28523f086C7a9C89E",
+            "name": "CurveConvex LP - rgUSD/fxUSD"
+        },
+        {
+            "id": 29,
+            "implementation": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+            "stakingAddress": "0x5801Bb8f568979C722176Df36b1a74654A9C52b5",
+            "stakingToken": "0x16b54e3aC8e3ba088333985035b869847e36E770",
+            "rewardsAddress": "0xE2ED2F627Bc050a5af7a09F11704B678Cf2748bb",
+            "name": "CurveConvex LP - USDe/fxUSD"
         }
     ]
 }

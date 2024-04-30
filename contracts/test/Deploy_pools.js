@@ -299,8 +299,12 @@ contract("Deploy Pools", async accounts => {
     // await deployRebalancePool("0xf58c499417e36714e99803Cb135f507a95ae7169", "RebalancePool - rUSD wezETH","rusd");
     // await deployRebalancePool("0xBa947cba270D30967369Bf1f73884Be2533d7bDB", "RebalancePool - rUSD xezETH","rusd");
 
-    await deployRebalancePool("0xf291EC9C2F87A41386fd94eC4BCdC3270eD04482", "RebalancePool - btcUSD wbtc","btcusd");
-    await deployRebalancePool("0xBB549046497364A1E26F94f7e93685Dc29FAd8c0", "RebalancePool - btcUSD xwbtc","btcusd");
+    // await deployRebalancePool("0xf291EC9C2F87A41386fd94eC4BCdC3270eD04482", "RebalancePool - btcUSD wbtc","btcusd");
+    // await deployRebalancePool("0xBB549046497364A1E26F94f7e93685Dc29FAd8c0", "RebalancePool - btcUSD xwbtc","btcusd");
+
+    await deployERC20Pool("0xDF7fbDBAE50C7931a11765FAEd9fe1A002605B55", "CurveConvex LP - MIM/fxUSD");
+    await deployERC20Pool("0x4CA79F4FE25BCD329445CDBE7E065427ACa98380", "CurveConvex LP - rgUSD/fxUSD");
+    await deployERC20Pool("0x5801Bb8f568979C722176Df36b1a74654A9C52b5", "CurveConvex LP - USDe/fxUSD");
 
     console.log("data:");
     console.log(JSON.stringify(deployedData, null, 4));
