@@ -4,15 +4,20 @@ var contractList = jsonfile.readFileSync('./contracts.json');
 
 const LpRewardHook = artifacts.require("LpRewardHook");
 const TreasuryManager = artifacts.require("TreasuryManager");
+const PoolUtilities = artifacts.require("PoolUtilities");
 
 
-const addAccount = async (address) => {
+const unlockAccount = async (address) => {
+  let NETWORK = config.network;
+  if(!NETWORK.includes("debug")){
+    return null;
+  }
   return new Promise((resolve, reject) => {
     web3.currentProvider.send(
       {
         jsonrpc: "2.0",
-        method: "evm_addAccount",
-        params: [address, "passphrase"],
+        method: "hardhat_impersonateAccount",
+        params: [address],
         id: new Date().getTime(),
       },
       (err, result) => {
@@ -25,14 +30,17 @@ const addAccount = async (address) => {
   });
 };
 
-const unlockAccount = async (address) => {
-  await addAccount(address);
+const setNoGas = async () => {
+  let NETWORK = config.network;
+  if(!NETWORK.includes("debug")){
+    return null;
+  }
   return new Promise((resolve, reject) => {
     web3.currentProvider.send(
       {
         jsonrpc: "2.0",
-        method: "personal_unlockAccount",
-        params: [address, "passphrase"],
+        method: "hardhat_setNextBlockBaseFeePerGas",
+        params: ["0x0"],
         id: new Date().getTime(),
       },
       (err, result) => {
@@ -99,12 +107,18 @@ contract("Deploy", async accounts => {
     let multisig = contractList.system.multisig;
     let addressZero = "0x0000000000000000000000000000000000000000"
 
+    await unlockAccount(deployer);
     
-    var deployment = await LpRewardHook.new({from:deployer});
-    console.log("LpRewardHook deployed to: " +deployment.address)
+    // var deployment = await LpRewardHook.new({from:deployer});
+    // console.log("LpRewardHook deployed to: " +deployment.address)
 
-    var deployment = await TreasuryManager.new({from:deployer});
-    console.log("TreasuryManager deployed to: " +deployment.address)
+    // var deployment = await TreasuryManager.new({from:deployer});
+    // console.log("TreasuryManager deployed to: " +deployment.address)
+
+    var util = await PoolUtilities.new(contractList.system.poolReg, {from:deployer});
+    console.log("util " +util.address);
+
+    await util.poolRewardRatesById(25).then(a=>console.log(JSON.stringify(a)));
 
     console.log("done");
     

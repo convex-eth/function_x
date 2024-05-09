@@ -61,7 +61,7 @@ contract PoolUtilities{
     //get rates of each token per deposit for the specified gauge
     function gaugeRewardRates(address _gauge) public view returns (address[] memory tokens, uint256[] memory rates) {
         //get token emission rates and gauge weighting
-        uint256 emissionRate = IFxnToken(fxn).rate();
+        uint256 emissionRate = IFxnToken(fxn).rate() * 1e18;
         uint256 gaugeWeight = IGaugeController(gaugeController).gauge_relative_weight(_gauge);
 
         //get list of reward tokens
@@ -122,7 +122,7 @@ contract PoolUtilities{
             (,uint80 _rate,,uint40 finishAt) = IFxnGauge(_pool).rewardData(rewardTokens[i]);
 
             if(block.timestamp <= uint256(finishAt)){
-                rates[i] = uint256(_rate);
+                rates[i] = uint256(_rate) * 1e18;
                 if(gaugeSupply > 0){
                     rates[i] = rates[i] * 1e18 / gaugeSupply;
                 }

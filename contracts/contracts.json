@@ -25,7 +25,7 @@
         "vault_rebalance": "0xd6da2A43DeD6fC647AA5Fb526E96b1F37C24CEa8",
         "vault_rebalance_rusd": "0x54eAdF1f41F0F9CeF9f3BFD721C0aCe8cf5a9266",
         "vault_rebalance_btcusd": "0xDB1A3E4B18D445EB09f9eD4cdd3DcF38534B9D7b",
-        "poolUtility": "0xcc8bbA630037D147Cb5b128755a0e8158eb1E65a"
+        "poolUtility": "0xcDd65f44095346997B1F12915Dc2369d819d7c21"
     },
     "fxn": {
         "fxn": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
