@@ -95,9 +95,9 @@ contract PoolUtilities{
             (,uint80 _rate,,uint40 finishAt) = IFxnGauge(_gauge).rewardData(rewardTokens[i]);
 
             if(block.timestamp <= uint256(finishAt)){
-                rates[i+1] = uint256(_rate);
+                rates[i+1] = uint256(_rate) * 1e18;
                 if(gaugeSupply > 0){
-                    rates[i+1] = uint256(_rate) * 1e18 / gaugeSupply;
+                    rates[i+1] = rates[i+1] * 1e18 / gaugeSupply;
                 }
             }
             tokens[i+1] = rewardTokens[i];

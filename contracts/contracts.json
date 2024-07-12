@@ -282,7 +282,31 @@
             "stakingAddress": "0x5801Bb8f568979C722176Df36b1a74654A9C52b5",
             "stakingToken": "0x16b54e3aC8e3ba088333985035b869847e36E770",
             "rewardsAddress": "0xE2ED2F627Bc050a5af7a09F11704B678Cf2748bb",
-            "name": "CurveConvex LP - USDe/fxUSD"
+            "name": "CurveConvex LP - eUSD/fxUSD"
+        },
+        {
+            "id": 30,
+            "implementation": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+            "stakingAddress": "0x0B700C60de435D522081cC5eB12B63875FE7e65a",
+            "stakingToken": "0x74c204520c9e88aA3EB9d61788ABA11Be1e0193F",
+            "rewardsAddress": "0xC12d06AD69078D00bD60060a57376117e04f134d",
+            "name": "CurveConvex LP - USD0/fxUSD"
+        },
+        {
+            "id": 31,
+            "implementation": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+            "stakingAddress": "0x9516c367952430371A733E5eBb587E01eE082F99",
+            "stakingToken": "0x13eA95Ce68185e334d3747539845A3b7643a8cab",
+            "rewardsAddress": "0x4e1ee07Af8f2BE433Db97a898AFF5d52EF7a7367",
+            "name": "CurveConvex LP - zunUSD/fxUSD"
+        },
+        {
+            "id": 32,
+            "implementation": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+            "stakingAddress": "0xf1E141C804BA39b4a031fDF46e8c08dBa7a0df60",
+            "stakingToken": "0x5018BE882DccE5E3F2f3B0913AE2096B9b3fB61f",
+            "rewardsAddress": "0x67D7710b946240F48EE8d4741BE4e9B11fA80B5F",
+            "name": "CurveConvex LP - fxUSD/USDC"
         }
     ]
 }
