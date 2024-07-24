@@ -180,6 +180,11 @@ contract("Deploy Pools", async accounts => {
     // console.log("newimp " +newimp.address);
     // return;
 
+    // var cvxusd = "0x9f0D5E33617A1Db6f1CBd5580834422684f09269"
+    // var newimp = await StakingProxyRebalancePool.new(poolReg.address, feeReg.address, contractList.fxn.tokenMinter, cvxusd, {from:deployer});
+    // console.log("cvxusd imp: " +newimp.address);
+    // return;
+
     console.log("\n\ncreate pools...");
 
     var deployedData = [];
@@ -193,6 +198,10 @@ contract("Deploy Pools", async accounts => {
       if(usdtype=="btcusd"){
         imp = contractList.system.vault_rebalance_btcusd;
         console.log("using btcusd..")
+      }
+      if(usdtype=="cvxusd"){
+        imp = contractList.system.vault_rebalance_cvxusd;
+        console.log("using cvxusd..")
       }
       console.log("\n----- Deploy Rebalance Pool ------\n");
       console.log("name: " +targetname);
@@ -309,7 +318,10 @@ contract("Deploy Pools", async accounts => {
 
     // await deployERC20Pool("0x0B700C60de435D522081cC5eB12B63875FE7e65a", "CurveConvex LP - USD0/fxUSD");
     // await deployERC20Pool("0x9516c367952430371A733E5eBb587E01eE082F99", "CurveConvex LP - zunUSD/fxUSD");
-    await deployERC20Pool("0xf1E141C804BA39b4a031fDF46e8c08dBa7a0df60", "CurveConvex LP - fxUSD/USDC");
+    // await deployERC20Pool("0xf1E141C804BA39b4a031fDF46e8c08dBa7a0df60", "CurveConvex LP - fxUSD/USDC");
+
+    await deployRebalancePool("0x0AB9Dc99a33Cd02A776a9117f211803Fb69Fd7C4", "RebalancePool - cvxUSD aCVX","cvxusd");
+    await deployRebalancePool("0xA04d761adad1029e4f2F60ac973a76c5307EfceA", "RebalancePool - cvxUSD xCVX","cvxusd");
 
     console.log("data:");
     console.log(JSON.stringify(deployedData, null, 4));

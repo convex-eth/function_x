@@ -25,6 +25,7 @@
         "vault_rebalance": "0xd6da2A43DeD6fC647AA5Fb526E96b1F37C24CEa8",
         "vault_rebalance_rusd": "0x54eAdF1f41F0F9CeF9f3BFD721C0aCe8cf5a9266",
         "vault_rebalance_btcusd": "0xDB1A3E4B18D445EB09f9eD4cdd3DcF38534B9D7b",
+        "vault_rebalance_cvxusd": "0x55DeCf506D54878c1768c05dB27C025b14EBC55f",
         "poolUtility": "0x91B6D814a393e38e6Bfb9A155d043b30Fc9937b2"
     },
     "fxn": {
@@ -307,6 +308,22 @@
             "stakingToken": "0x5018BE882DccE5E3F2f3B0913AE2096B9b3fB61f",
             "rewardsAddress": "0x67D7710b946240F48EE8d4741BE4e9B11fA80B5F",
             "name": "CurveConvex LP - fxUSD/USDC"
+        },
+        {
+            "id": 33,
+            "implementation": "0x55DeCf506D54878c1768c05dB27C025b14EBC55f",
+            "stakingAddress": "0x0AB9Dc99a33Cd02A776a9117f211803Fb69Fd7C4",
+            "stakingToken": "0x9Fcb2c47DaB11e38fec4b8c886F63741bfED4c41",
+            "rewardsAddress": "0xd207d39F195831CBF3cd6DD759127C0c8Bd7699d",
+            "name": "RebalancePool - cvxUSD aCVX"
+        },
+        {
+            "id": 34,
+            "implementation": "0x55DeCf506D54878c1768c05dB27C025b14EBC55f",
+            "stakingAddress": "0xA04d761adad1029e4f2F60ac973a76c5307EfceA",
+            "stakingToken": "0x9Fcb2c47DaB11e38fec4b8c886F63741bfED4c41",
+            "rewardsAddress": "0xa874F38c1A2E418Dc708506b3a36273a4E920BDd",
+            "name": "RebalancePool - cvxUSD xCVX"
         }
     ]
 }
