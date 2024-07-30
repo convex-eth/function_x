@@ -320,8 +320,10 @@ contract("Deploy Pools", async accounts => {
     // await deployERC20Pool("0x9516c367952430371A733E5eBb587E01eE082F99", "CurveConvex LP - zunUSD/fxUSD");
     // await deployERC20Pool("0xf1E141C804BA39b4a031fDF46e8c08dBa7a0df60", "CurveConvex LP - fxUSD/USDC");
 
-    await deployRebalancePool("0x0AB9Dc99a33Cd02A776a9117f211803Fb69Fd7C4", "RebalancePool - cvxUSD aCVX","cvxusd");
-    await deployRebalancePool("0xA04d761adad1029e4f2F60ac973a76c5307EfceA", "RebalancePool - cvxUSD xCVX","cvxusd");
+    // await deployRebalancePool("0x0AB9Dc99a33Cd02A776a9117f211803Fb69Fd7C4", "RebalancePool - cvxUSD aCVX","cvxusd");
+    // await deployRebalancePool("0xA04d761adad1029e4f2F60ac973a76c5307EfceA", "RebalancePool - cvxUSD xCVX","cvxusd");
+
+    await deployERC20Pool("0x7a505e920d5d7E4b402D9Ee345fB7E8Cdc265262", "CurveConvex LP - trifxusd");
 
     console.log("data:");
     console.log(JSON.stringify(deployedData, null, 4));

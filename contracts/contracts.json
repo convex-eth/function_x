@@ -324,6 +324,14 @@
             "stakingToken": "0x9Fcb2c47DaB11e38fec4b8c886F63741bfED4c41",
             "rewardsAddress": "0xa874F38c1A2E418Dc708506b3a36273a4E920BDd",
             "name": "RebalancePool - cvxUSD xCVX"
+        },
+        {
+            "id": 35,
+            "implementation": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+            "stakingAddress": "0x7a505e920d5d7E4b402D9Ee345fB7E8Cdc265262",
+            "stakingToken": "0x52bF165abd26106D810733CC29FAfF68b96DECe8",
+            "rewardsAddress": "0x554c5bA0Ffa562db8082Fc8228846Ddd2473E44B",
+            "name": "CurveConvex LP - trifxusd"
         }
     ]
 }
