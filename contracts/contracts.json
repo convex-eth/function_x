@@ -332,6 +332,14 @@
             "stakingToken": "0x52bF165abd26106D810733CC29FAfF68b96DECe8",
             "rewardsAddress": "0x554c5bA0Ffa562db8082Fc8228846Ddd2473E44B",
             "name": "CurveConvex LP - trifxusd"
+        },
+        {
+            "id": 36,
+            "implementation": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+            "stakingAddress": "0xEd92dDe3214c24Ae04F5f96927E3bE8f8DbC3289",
+            "stakingToken": "0x65C9A641afCEB9C0E6034e558A319488FA0FA3be",
+            "rewardsAddress": "0x4187DC4998bB9f47389cD885A80a52A74EC8803c",
+            "name": "fxbase"
         }
     ]
 }
