@@ -339,7 +339,15 @@
             "stakingAddress": "0xEd92dDe3214c24Ae04F5f96927E3bE8f8DbC3289",
             "stakingToken": "0x65C9A641afCEB9C0E6034e558A319488FA0FA3be",
             "rewardsAddress": "0x4187DC4998bB9f47389cD885A80a52A74EC8803c",
-            "name": "fxbase"
+            "name": "fxbase-wsteth"
+        },
+        {
+            "id": 37,
+            "implementation": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+            "stakingAddress": "0x215D87bd3c7482E2348338815E059DE07Daf798A",
+            "stakingToken": "0x65C9A641afCEB9C0E6034e558A319488FA0FA3be",
+            "rewardsAddress": "0xB956a3a8b5928f96b6E7BF0C5f9F771e8ae985Ec",
+            "name": "fxbase-fx"
         }
     ]
 }
