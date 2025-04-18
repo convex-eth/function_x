@@ -348,6 +348,22 @@
             "stakingToken": "0x65C9A641afCEB9C0E6034e558A319488FA0FA3be",
             "rewardsAddress": "0xB956a3a8b5928f96b6E7BF0C5f9F771e8ae985Ec",
             "name": "fxbase-fx"
+        },
+        {
+            "id": 38,
+            "implementation": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+            "stakingAddress": "0x8d9186Fa822624bad50a5cB2545048CB26b4E65E",
+            "stakingToken": "0xb0ef04ACE97d350E24Efa5139d2590D26a61A8Dc",
+            "rewardsAddress": "0x13E52142371d0B67b80682dDe46d719e9B46Ddf2",
+            "name": "CurveConvex LP - reUSD/fxUSD"
+        },
+        {
+            "id": 39,
+            "implementation": "0x359c1EFd3fC7e3a9b7a043c185fD5d39DEc1fc81",
+            "stakingAddress": "0xa295829c082C4d21fE37dbC8C96bFa0ef6dbaa92",
+            "stakingToken": "0xB6aF437ceEa0DBeA524115eFC905F0F44fd1eBAF",
+            "rewardsAddress": "0xbD654082A1dDc7E3A067f5d5595f852Ae8b715aB",
+            "name": "CurveConvex LP - USDN/fxUSD"
         }
     ]
 }
