@@ -16,7 +16,7 @@ const unlockAccount = async (address) => {
     web3.currentProvider.send(
       {
         jsonrpc: "2.0",
-        method: "hardhat_impersonateAccount",
+        method: "anvil_impersonateAccount",
         params: [address],
         id: new Date().getTime(),
       },
@@ -108,6 +108,7 @@ contract("Deploy", async accounts => {
     let addressZero = "0x0000000000000000000000000000000000000000"
 
     await unlockAccount(deployer);
+    console.log("deployer: " +deployer);
     
     // var deployment = await LpRewardHook.new({from:deployer});
     // console.log("LpRewardHook deployed to: " +deployment.address)

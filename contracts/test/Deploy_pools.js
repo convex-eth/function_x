@@ -36,7 +36,8 @@ const unlockAccount = async (address) => {
     web3.currentProvider.send(
       {
         jsonrpc: "2.0",
-        method: "hardhat_impersonateAccount",
+        // method: "hardhat_impersonateAccount",
+        method: "anvil_impersonateAccount",
         params: [address],
         id: new Date().getTime(),
       },
